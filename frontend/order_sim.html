@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Recharge - Easy Recharge MM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand">Easy Recharge MM</div>
+            <div class="nav-links">
+                <a href="index.html">Dashboard</a>
+                <a href="status.html">Orders</a>
+                <a href="profile.html">Profile</a>
+                <a href="services.html">Services</a>
+                <a href="faq.html">FAQ</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="form-container">
+            <h2>SIM Recharge Order</h2>
+            <form id="simOrderForm">
+                <div class="form-group">
+                    <label for="service">Service Package:</label>
+                    <select id="service" required>
+                        <option value="">Select Package</option>
+                        <option value="mpt-3gb">MPT - 3GB Data (1,500 MMK)</option>
+                        <option value="mpt-5gb">MPT - 5GB Data (2,500 MMK)</option>
+                        <option value="telenor-regular">Telenor - Regular (1,000 MMK)</option>
+                        <option value="ooredoo-basic">Ooredoo - Basic (2,000 MMK)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number:</label>
+                    <input type="tel" id="phoneNumber" placeholder="09XXXXXXXXX" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" value="1" min="1" max="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Total Amount:</label>
+                    <div id="totalAmount" style="font-size: 1.2rem; font-weight: bold; color: #2c3e50;">0 MMK</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method:</label>
+                    <select id="paymentMethod" required>
+                        <option value="">Select Payment</option>
+                        <option value="kbz_pay">KBZ Pay</option>
+                        <option value="wave_pay">Wave Pay</option>
+                        <option value="cb_pay">CB Pay</option>
+                        <option value="aya_pay">Aya Pay</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="transactionId">Transaction ID:</label>
+                    <input type="text" id="transactionId" placeholder="Enter transaction ID from payment app" required>
+                </div>
+
+                <button type="submit" class="btn">Submit Order</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="price.js"></script>
+    <script src="script.js"></script>
+</body>
+                  </html>
