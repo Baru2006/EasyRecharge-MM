@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - Easy Recharge MM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-brand">Easy Recharge MM</div>
+            <div class="nav-links">
+                <a href="index.html">Dashboard</a>
+                <a href="status.html">Orders</a>
+                <a href="profile.html">Profile</a>
+                <a href="services.html">Services</a>
+                <a href="faq.html">FAQ</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <h2>Your Profile</h2>
+        
+        <div class="profile-stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalOrders">0</span>
+                <span>Total Orders</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalSpent">0 MMK</span>
+                <span>Total Spent</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalP2P">0 MMK</span>
+                <span>Total P2P Exchange</span>
+            </div>
+        </div>
+
+        <div class="user-info" style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;">
+            <h3>User Information</h3>
+            <p><strong>User ID:</strong> <span id="userId">-</span></p>
+            <p><strong>Role:</strong> <span id="userRole">-</span></p>
+        </div>
+
+        <h3>Recent Orders (Last 10)</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Service</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="recentOrders">
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Loading recent orders...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="price.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
