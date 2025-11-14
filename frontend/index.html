@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Recharge MM - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f4f4f9; }
+        .card { transition: all 0.3s ease; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); }
+        .btn-link { padding: 10px 15px; border-radius: 8px; font-weight: 600; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="max-w-md mx-auto p-4 pt-8">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Easy Recharge MM</h1>
+            <p class="text-lg text-indigo-600 font-medium">ဝန်ဆောင်မှုများ ရယူရန် ကြိုဆိုပါတယ်</p>
+        </header>
+
+        <div class="mb-8 p-4 bg-white rounded-xl shadow-lg border-l-4 border-indigo-500">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-500">Admin ဖုန်းနံပါတ်</span>
+                <span id="admin-phone" class="text-xl font-bold text-gray-700">Loading...</span>
+            </div>
+            <button onclick="copyAdminPhone()" class="mt-2 w-full py-2 bg-indigo-100 text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-200 transition duration-150">
+                ကူးယူရန်
+            </button>
+        </div>
+
+        <div id="service-grid" class="grid grid-cols-2 gap-4">
+            <a href="order_sim.html" class="card bg-white p-5 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
+                <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                <span class="font-semibold text-gray-700">SIM/Data ဝယ်ယူရန်</span>
+            </a>
+            <a href="order_game.html" class="card bg-white p-5 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
+                <svg class="w-8 h-8 text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.185l-1.92-1.891a1 1 0 00-1.428 0l-1.92 1.891a1 1 0 000 1.414l1.92 1.891a1 1 0 001.428 0l1.92-1.891a1 1 0 000-1.414z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 18a8 8 0 100-16 8 8 0 000 16z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l3 3"></path></svg>
+                <span class="font-semibold text-gray-700">Game Top Up ဝယ်ယူရန်</span>
+            </a>
+            <a href="order_smm.html" class="card bg-white p-5 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
+                <svg class="w-8 h-8 text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                <span class="font-semibold text-gray-700">SMM ဝန်ဆောင်မှု</span>
+            </a>
+            <a href="pay.html" class="card bg-white p-5 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
+                <svg class="w-8 h-8 text-purple-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2-9h10a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9a2 2 0 012-2z"></path></svg>
+                <span class="font-semibold text-gray-700">P2P ငွေလဲလှယ်ခြင်း</span>
+            </a>
+        </div>
+
+        <div class="mt-8 flex justify-center space-x-4">
+            <a href="status.html" class="btn-link bg-indigo-500 text-white hover:bg-indigo-600 transition duration-150 shadow-md">
+                မှာယူမှု စစ်ဆေးရန်
+            </a>
+            <a href="profile.html" class="btn-link bg-gray-200 text-gray-800 hover:bg-gray-300 transition duration-150 shadow-md">
+                ပရိုဖိုင်
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/YOUR_GAS_DEPLOYMENT_ID/exec';
+        const maintenanceUrl = 'closed_today_20251114.html';
+
+        function getUserId() {
+            let userId = localStorage.getItem('easyRechargeUserId');
+            if (!userId) {
+                userId = 'GUEST-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+                localStorage.setItem('easyRechargeUserId', userId);
+            }
+            return userId;
+        }
+
+        async function fetchData(params) {
+            const url = new URL(GAS_WEB_APP_URL);
+            url.search = new URLSearchParams(params).toString();
+            try {
+                const response = await fetch(url.toString(), { method: 'GET' });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const text = await response.text();
+                
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Failed to parse JSON:', text);
+                    return { status: 'error', message: 'Invalid JSON response.' };
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return { status: 'error', message: 'Connection Error: ' + error.message };
+            }
+        }
+
+        async function getAdminPhone() {
+            const result = await fetchData({ action: 'get_admin_phone' });
+            const phoneElement = document.getElementById('admin-phone');
+            if (result && result.adminPhone) {
+                phoneElement.textContent = result.adminPhone;
+            } else {
+                phoneElement.textContent = '09 XXXXXXXX';
+            }
+        }
+
+        function copyAdminPhone() {
+            const phone = document.getElementById('admin-phone').textContent;
+            if (phone && phone !== 'Loading...' && phone !== '09 XXXXXXXX') {
+                document.execCommand('copy');
+                showToast('ဖုန်းနံပါတ် ကူးယူပြီးပါပြီ။', 'success');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-5 left-1/2 transform -translate-x-1/2 p-3 rounded-xl shadow-2xl text-white text-sm font-semibold transition-opacity duration-300 z-50`;
+            
+            if (type === 'success') {
+                toast.classList.add('bg-green-600');
+            } else if (type === 'error') {
+                toast.classList.add('bg-red-600');
+            } else {
+                toast.classList.add('bg-gray-700');
+            }
+
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        getUserId();
+        getAdminPhone();
+
+        // Maintenance check simulation
+        function checkMaintenance() {
+            // In a real scenario, this would check a status flag in GAS
+            const isMaintenance = false; 
+            if (isMaintenance) {
+                window.location.href = maintenanceUrl;
+            }
+        }
+        checkMaintenance();
+    </script>
+</body>
+</html>
+
+          
