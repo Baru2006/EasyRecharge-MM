@@ -69,17 +69,17 @@ function setupMaintenanceListener() {
 
     onSnapshot(configDocRef, (docSnap) => {
         let isMaintenanceActive = false;
-        let adminPhone = '09xxxxxxxx';
+        let adminPhone = '09791134604';
 
         if (docSnap.exists()) {
             const data = docSnap.data();
             isMaintenanceActive = data.isMaintenanceActive === true;
-            adminPhone = data.adminPhone || '09xxxxxxxx';
+            adminPhone = data.adminPhone || '09791134604';
         } else {
              // If config doesn't exist, create it with default values
              setDoc(configDocRef, { 
                 isMaintenanceActive: false, 
-                adminPhone: '0979xxxxxxx', 
+                adminPhone: '09791134604', 
                 lastUpdated: serverTimestamp() 
             }, { merge: true }).catch(e => console.error("Error setting default config:", e));
         }
