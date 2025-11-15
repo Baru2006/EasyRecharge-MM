@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>SIM Recharge</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="script.js"></script>
+</head>
+<body>
+
+<header class="header"><h1>SIM Recharge</h1></header>
+
+<form id="simForm" class="form">
+  <label>Provider</label>
+  <select id="provider">
+    <option value="MPT">MPT</option>
+    <option value="Ooredoo">Ooredoo</option>
+    <option value="Telenor">Telenor</option>
+  </select>
+
+  <label>Package</label>
+  <select id="package" onchange="calcSimTotal()">
+    <option value="1000">1000 Ks</option>
+    <option value="3000">3000 Ks</option>
+    <option value="5000">5000 Ks</option>
+  </select>
+
+  <label>Phone Number</label>
+  <input id="phone" type="text" placeholder="09xxxxxxxx">
+
+  <label>Transaction ID</label>
+  <input id="txid" type="text">
+
+  <div class="total-box">Total: <span id="totalSim">0</span> Ks</div>
+
+  <button type="button" onclick="submitSim()">Submit</button>
+</form>
+
+<nav class="bottom-nav">
+  <button onclick="go('index.html')">Home</button>
+  <button onclick="go('status.html')">Status</button>
+</nav>
+
+</body>
+</html>
