@@ -1,6 +1,7 @@
 /* ---
 BasseinPay: Telegram-Style Frontend
 script.js
+(9:16 Slip Image Fix)
 --- */
 
 (function () {
@@ -453,6 +454,10 @@ script.js
 
       if (slipInput && slipInput.files.length > 0) {
         slipDataUrl = await readAndResizeImage(slipInput.files[0]);
+      } else {
+        // (*** ပြင်ဆင်ချက် ***) Slip မပါရင် မ submit ပါ။
+        // (*** MODIFICATION ***) Don't submit if no slip.
+        throw new Error("Payment Slip is required.");
       }
 
       // Build a details object from the form
@@ -502,7 +507,9 @@ script.js
         return reject(new Error("File is not an image."));
       }
 
-      const MAX_DIMENSION = 800; // Max width/height for receipt
+      // (*** ပြင်ဆင်ချက် ***) ၉:၁၆ ပုံတွေအတွက် Quality ပိုကောင်းအောင် 800 ကနေ 1280 တိုးထားပါတယ်။
+      // (*** MODIFICATION ***) Increased from 800 to 1280 for better 9:16 image quality.
+      const MAX_DIMENSION = 1280;
       const reader = new FileReader();
 
       reader.onload = (e) => {
@@ -593,154 +600,209 @@ script.js
           k: "Amount",
           v: formData.get("pay_amount") + " MMK",
         });
-        details.items.push({ k: "Fee", v: formData.get("p2p_fee") });
+        details.items.push({
+          k: "Fee",
+          v: document.getElementById("p2p-fee").textContent,
+        });
         break;
     }
     return details;
   }
 
   /**
-   * Uses Canvas to draw the PNG receipt
+   * (*** အကြီးမားဆုံး ပြင်ဆင်ချက် နေရာ ***)
+   * (*** MAJOR MODIFICATION AREA ***)
+   *
+   * Uses Canvas to draw the PNG receipt.
+   * This version first loads the image to calculate its 9:16 height,
+   * then sets the canvas height dynamically.
+   *
    * @param {object} details - The order details object
    * @param {string} slipDataUrl - The Data URL of the payment slip
    * @returns {Promise<HTMLCanvasElement>} A promise resolving with the canvas
    */
   function generateReceiptCanvas(details, slipDataUrl) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
 
       const W = 700;
       const P = 40; // Padding
-      const contentW = W - P * 2;
+      const contentW = W - P * 2; // 620px
       const baseFontSize = 24;
       const lineHeight = baseFontSize * 1.6;
-      let y = P;
 
-      // --- Calculate Height ---
-      let totalHeight = P;
-      totalHeight += 60; // Header
-      totalHeight += lineHeight * details.items.length; // Items
-      totalHeight += 60; // Total
-      totalHeight += P; // Spacer
+      // --- Step 1: Load Image First ---
+      // ပုံကို အရင် load လုပ်ပြီး သူ့ရဲ့ အမြင့်ကို တွက်ပါမယ်။
+      const img = new Image();
+      img.onload = () => {
+        // ပုံ load ပြီးမှ canvas ကို စဆွဲပါမယ်။
+        drawCanvas(img);
+      };
+      img.onerror = () => {
+        // ပုံမပါရင် (or error) လည်း ဆက်ဆွဲပါမယ်။
+        console.warn("Could not load slip image for canvas.");
+        drawCanvas(null); // pass null to indicate no image
+      };
+
       if (slipDataUrl) {
-        totalHeight += 400 + P; // Slip image (approx)
-      }
-      totalHeight += 60; // Watermark & Footer
-      totalHeight += P;
-
-      canvas.width = W;
-      canvas.height = totalHeight;
-
-      // --- 1. Draw Background (Telegram White) ---
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, W, totalHeight);
-
-      // --- 2. Header ---
-      y += 20;
-      ctx.fillStyle = "#0088cc";
-      ctx.font = `bold ${baseFontSize + 12}px Arial`;
-      ctx.textAlign = "center";
-      ctx.fillText("BasseinPay", W / 2, y);
-      y += 30;
-
-      ctx.fillStyle = "#000000";
-      ctx.font = `bold ${baseFontSize + 4}px Arial`;
-      ctx.fillText(details.type, W / 2, (y += lineHeight));
-
-      ctx.fillStyle = "#8a8a8e";
-      ctx.font = `${baseFontSize - 6}px Arial`;
-      ctx.fillText(details.date, W / 2, (y += 30));
-      y += 40;
-
-      // --- 3. Order Items ---
-      ctx.textAlign = "left";
-      details.items.forEach((item) => {
-        ctx.fillStyle = "#8a8a8e";
-        ctx.font = `500 ${baseFontSize - 4}px Arial`;
-        ctx.fillText(item.k, P, y);
-
-        ctx.fillStyle = "#000000";
-        ctx.font = `600 ${baseFontSize - 2}px Arial`;
-        ctx.textAlign = "right";
-        ctx.fillText(item.v, W - P, y);
-
-        y += lineHeight;
-        ctx.textAlign = "left";
-      });
-
-      // --- 4. Total Price ---
-      y += 20;
-      ctx.beginPath();
-      ctx.moveTo(P, y);
-      ctx.lineTo(W - P, y);
-      ctx.strokeStyle = "#e0e0e0";
-      ctx.stroke();
-      y += 40;
-
-      ctx.fillStyle = "#000000";
-      ctx.font = `600 ${baseFontSize}px Arial`;
-      ctx.fillText("Total Paid", P, y);
-
-      ctx.fillStyle = "#0088cc";
-      ctx.font = `bold ${baseFontSize + 8}px Arial`;
-      ctx.textAlign = "right";
-      ctx.fillText(details.total, W - P, y);
-
-      y += 60;
-
-      // --- 5. Payment Slip ---
-      if (slipDataUrl) {
-        const img = new Image();
-        img.onload = () => {
-          ctx.textAlign = "left";
-          ctx.fillStyle = "#8a8a8e";
-          ctx.font = `500 ${baseFontSize - 4}px Arial`;
-          ctx.fillText("Payment Slip", P, y);
-          y += 30;
-
-          // Draw image, max width
-          const imgH = (img.height / img.width) * contentW;
-          ctx.drawImage(img, P, y, contentW, imgH);
-          y += imgH + P;
-          drawFooterAndResolve();
-        };
-        img.onerror = () => {
-          console.warn("Could not load slip image for canvas");
-          drawFooterAndResolve();
-        };
         img.src = slipDataUrl;
       } else {
-        drawFooterAndResolve();
+        // This shouldn't happen due to our form check, but as a fallback
+        img.onerror();
       }
 
-      // --- 6. Footer & Watermark ---
-      function drawFooterAndResolve() {
-        // Watermark
-        ctx.save();
-        ctx.globalAlpha = 0.05;
-        ctx.fillStyle = "#0088cc";
-        ctx.font = `bold 100px Arial`;
-        ctx.textAlign = "center";
-        ctx.rotate(-0.3);
-        ctx.fillText("BasseinPay", W / 2, y - 100);
-        ctx.restore();
+      // --- Step 2: Main Drawing Function ---
+      // ဒီ function ကို ပုံ load ပြီးမှ (ဒါမှမဟုတ် ပုံမပါရင်) ခေါ်ပါမယ်။
+      function drawCanvas(loadedImage) {
+        try {
+          let y = P;
 
-        // Footer
-        ctx.fillStyle = "#8a8a8e";
-        ctx.font = `${baseFontSize - 8}px Arial`;
-        ctx.textAlign = "center";
-        ctx.fillText(
-          `Order ID: ${details.orderId}`,
-          W / 2,
-          canvas.height - P - 10
-        );
-        ctx.fillText(
-          "Thank you for using BasseinPay!",
-          W / 2,
-          canvas.height - P + 10
-        );
-        resolve(canvas);
+          // --- 2a. Calculate Image Height ---
+          // ၉:၁၆ ပုံအတွက် အမြင့်ကို အမှန်အကန်တွက်ပါမယ်။
+          let slipImageHeight = 0;
+          if (loadedImage) {
+            // canvas ရဲ့ content width (620px) ကို အခြေခံပြီး
+            // ပုံရဲ့ 9:16 အတိုင်းအတာနဲ့ အမြင့်ကို တွက်တယ်။
+            // (e.g., 620 * (16/9) = 1102px)
+            slipImageHeight = (loadedImage.height / loadedImage.width) * contentW;
+          }
+
+          // --- 2b. Calculate TOTAL Canvas Height ---
+          // အခုမှ canvas ရဲ့ စုစုပေါင်းအမြင့်ကို အတိအကျတွက်လို့ရပါပြီ။
+          let totalHeight = P;
+          totalHeight += 60; // Header
+          totalHeight += lineHeight * details.items.length; // Items
+          totalHeight += 60; // Total
+          totalHeight += P; // Spacer
+          if (slipImageHeight > 0) {
+            totalHeight += 30; // "Payment Slip" text
+            totalHeight += slipImageHeight + P; // Slip image + padding
+          }
+          totalHeight += 60; // Watermark & Footer
+          totalHeight += P;
+
+          canvas.width = W;
+          canvas.height = totalHeight;
+
+          // --- 3. Draw Background ---
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, W, totalHeight);
+
+          // --- 4. Header ---
+          y += 20;
+          ctx.fillStyle = "#0088cc";
+          ctx.font = `bold ${baseFontSize + 12}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText("BasseinPay", W / 2, y);
+          y += 30;
+
+          ctx.fillStyle = "#000000";
+          ctx.font = `bold ${baseFontSize + 4}px Arial`;
+          ctx.fillText(details.type, W / 2, (y += lineHeight));
+
+          ctx.fillStyle = "#8a8a8e";
+          ctx.font = `${baseFontSize - 6}px Arial`;
+          ctx.fillText(details.date, W / 2, (y += 30));
+          y += 40;
+
+          // --- 5. Order Items ---
+          ctx.textAlign = "left";
+          details.items.forEach((item) => {
+            ctx.fillStyle = "#8a8a8e";
+            ctx.font = `500 ${baseFontSize - 4}px Arial`;
+            ctx.fillText(item.k, P, y);
+
+            ctx.fillStyle = "#000000";
+            ctx.font = `600 ${baseFontSize - 2}px Arial`;
+            ctx.textAlign = "right";
+
+            // Word wrapping for long values (like SMM links)
+            const value = (item.v || "N/A").toString();
+            const valueWidth = ctx.measureText(value).width;
+            const availableWidth = contentW - 150; // 150 is approx key width
+
+            if (valueWidth > availableWidth) {
+              // Simple truncate, good enough for most cases
+              let truncatedValue = value;
+              while (ctx.measureText(truncatedValue + "...").width > availableWidth) {
+                truncatedValue = truncatedValue.slice(0, -1);
+              }
+              ctx.fillText(truncatedValue + "...", W - P, y);
+            } else {
+              ctx.fillText(value, W - P, y);
+            }
+
+            y += lineHeight;
+            ctx.textAlign = "left";
+          });
+
+          // --- 6. Total Price ---
+          y += 20;
+          ctx.beginPath();
+          ctx.moveTo(P, y);
+          ctx.lineTo(W - P, y);
+          ctx.strokeStyle = "#e0e0e0";
+          ctx.stroke();
+          y += 40;
+
+          ctx.fillStyle = "#000000";
+          ctx.font = `600 ${baseFontSize}px Arial`;
+          ctx.fillText("Total Paid", P, y);
+
+          ctx.fillStyle = "#0088cc";
+          ctx.font = `bold ${baseFontSize + 8}px Arial`;
+          ctx.textAlign = "right";
+          ctx.fillText(details.total, W - P, y);
+
+          y += 60;
+
+          // --- 7. Payment Slip ---
+          // တွက်ထားတဲ့ အမြင့်အတိုင်း ပုံကိုဆွဲထည့်ပါမယ်။
+          if (slipImageHeight > 0 && loadedImage) {
+            ctx.textAlign = "left";
+            ctx.fillStyle = "#8a8a8e";
+            ctx.font = `500 ${baseFontSize - 4}px Arial`;
+            ctx.fillText("Payment Slip", P, y);
+            y += 30;
+
+            // Draw image with calculated 9:16 height
+            ctx.drawImage(loadedImage, P, y, contentW, slipImageHeight);
+            y += slipImageHeight + P;
+          }
+
+          // --- 8. Footer & Watermark ---
+          // Watermark
+          ctx.save();
+          ctx.globalAlpha = 0.05;
+          ctx.fillStyle = "#0088cc";
+          ctx.font = `bold 100px Arial`;
+          ctx.textAlign = "center";
+          ctx.rotate(-0.3);
+          ctx.fillText("BasseinPay", W / 2, y - 100);
+          ctx.restore();
+
+          // Footer
+          ctx.fillStyle = "#8a8a8e";
+          ctx.font = `${baseFontSize - 8}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText(
+            `Order ID: ${details.orderId}`,
+            W / 2,
+            canvas.height - P - 10
+          );
+          ctx.fillText(
+            "Thank you for using BasseinPay!",
+            W / 2,
+            canvas.height - P + 10
+          );
+
+          // --- 9. Resolve the promise ---
+          resolve(canvas);
+        } catch (e) {
+          console.error("Error during canvas drawing:", e);
+          reject(new Error("Failed to generate receipt PNG."));
+        }
       }
     });
   }
@@ -813,8 +875,18 @@ script.js
 
       if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
-        const reader = new FileReader();
 
+        // (*** ပြင်ဆင်ချက် ***) 5MB ထက်ကြီးလျှင် လက်မခံပါ။
+        // (*** MODIFICATION ***) Reject files larger than 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            showToast("File is too large (Max 5MB)", "error");
+            fileInput.value = ""; // Reset input
+            preview.style.display = "none";
+            if (previewLabel) previewLabel.style.display = "block";
+            return;
+        }
+
+        const reader = new FileReader();
         reader.onload = (e) => {
           previewImg.src = e.target.result;
           previewName.textContent = file.name;
