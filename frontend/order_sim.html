@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="my">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIM Recharge - BasseinPay</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="order_sim">
+    <div class="app-wrapper">
+      <!-- Header -->
+      <header class="header">
+        <a href="index.html" class="header-back-link">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Home</span>
+        </a>
+        <h1 class="header-title"></h1>
+      </header>
+
+      <!-- Main Content -->
+      <main class="container">
+        <div class="card">
+          <h2>📱 SIM Recharge</h2>
+          <form id="sim-order-form">
+            <!-- Price Display -->
+            <div class="price-display">
+              <span class="price-display-label">Total Price</span>
+              <div class="price-display-amount" id="total-price-amount">
+                0 MMK
+              </div>
+              <input
+                type="hidden"
+                id="total-price-hidden"
+                name="total_price"
+                value="0 MMK"
+              />
+            </div>
+
+            <!-- Form -->
+            <div class="form-group">
+              <label for="sim-provider">Provider</label>
+              <select id="sim-provider" name="sim_provider">
+                <option value="MPT">MPT</option>
+                <option value="Ooredoo">Ooredoo</option>
+                <option value="ATOM">ATOM</option>
+                <option value="Mytel">Mytel</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="sim-package">Package</label>
+              <select id="sim-package" name="sim_package">
+                <!-- Options will be populated by script.js -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="sim-phone">Phone Number</label>
+              <input
+                type="tel"
+                id="sim-phone"
+                name="sim_phone"
+                placeholder="e.g., 09xxxxxxxxx"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="payment-slip">Payment Slip (JPG/PNG)</label>
+              <label for="payment-slip" class="file-upload-wrapper">
+                <span class="file-upload-label">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                    ></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <div>Click to upload slip</div>
+                </span>
+                <div id="file-preview">
+                  <img id="file-preview-img" src="#" alt="Preview" />
+                  <div id="file-preview-info">
+                    <span id="file-preview-name">filename.jpg</span>
+                    Tap to change
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  id="payment-slip"
+                  name="payment_slip"
+                  accept="image/jpeg, image/png"
+                  required
+                />
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Generate Receipt & Submit
+            </button>
+          </form>
+        </div>
+      </main>
+
+      <!-- Bottom Navigation -->
+      <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </a>
+        <a href="services.html" class="nav-item">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+          <span>Services</span>
+        </a>
+        <a href="pay.html" class="nav-item">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="7" width="20" height="10" rx="2" ry="2"></rect>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          <span>Pay</span>
+        </a>
+      </nav>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
+
+  
