@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Order Confirmed</title>
+<link rel="stylesheet" href="style.css">
+<script>
+  function getID() {
+    const url = new URL(location.href);
+    document.getElementById("oid").innerText = url.searchParams.get("id");
+  }
+</script>
+</head>
+
+<body onload="getID()">
+
+<div class="success-box">
+  <h1>✔ Order Successful</h1>
+  <p>Order ID: <span id="oid"></span></p>
+
+  <a class="btn" href="https://t.me/YourGroupLink">Join Telegram Group</a>
+</div>
+
+</body>
+</html>
