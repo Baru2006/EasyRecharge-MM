@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="my">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Submitted - BasseinPay</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="telegram_group">
+    <!-- This page has no header or nav -->
+    <div class="app-wrapper">
+      <main class="success-page">
+        <!-- Success Checkmark Animation -->
+        <div class="success-icon">
+          <svg
+            class="checkmark"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 52 52"
+          >
+            <circle
+              class="checkmark-circle"
+              cx="26"
+              cy="26"
+              r="25"
+              fill="none"
+            />
+            <path
+              class="checkmark-check"
+              fill="none"
+              d="M14.1 27.2l7.1 7.2 16.7-16.8"
+            />
+          </svg>
+        </div>
+
+        <h1>Order Submitted!</h1>
+        <p>
+          Your receipt has been downloaded. Please join our Telegram group for
+          updates.
+        </p>
+
+        <!-- Order Summary -->
+        <div class="success-summary">
+          <h3>Order Summary</h3>
+          <div id="success-summary-content">
+            <!-- Content populated by script.js from localStorage -->
+            <div class="summary-item">
+              <strong>Loading...</strong>
+            </div>
+          </div>
+        </div>
+
+        <a
+          href="#"
+          id="telegram-join-button"
+          class="btn btn-primary"
+          target="_blank"
+          rel="noopener"
+        >
+          Join Telegram Group
+        </a>
+      </main>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
+
