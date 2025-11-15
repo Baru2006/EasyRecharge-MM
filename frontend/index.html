@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>BasseinPay</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script defer src="script.js"></script>
+</head>
+<body>
+
+<header class="header">
+  <h1>BasseinPay</h1>
+</header>
+
+<section class="slider">
+  <div class="slide">🔥 Promotion – 10% Off Today</div>
+  <div class="slide">🎮 Game Top Up – Fast Delivery</div>
+  <div class="slide">📱 SIM Data Sale</div>
+</section>
+
+<section class="services">
+  <div class="service-card" onclick="go('order_sim.html')">
+    <img src="icons/sim.png">
+    <p>SIM Recharge</p>
+  </div>
+
+  <div class="service-card" onclick="go('order_game.html')">
+    <img src="icons/game.png">
+    <p>Game Top-Up</p>
+  </div>
+
+  <div class="service-card" onclick="go('order_smm.html')">
+    <img src="icons/smm.png">
+    <p>SMM Services</p>
+  </div>
+
+  <div class="service-card" onclick="go('pay.html')">
+    <img src="icons/p2p.png">
+    <p>P2P Exchange</p>
+  </div>
+</section>
+
+<section class="admin-box">
+  <h3>Admin Phone</h3>
+  <p id="adminPhone">+959 XXXXXXXX</p>
+</section>
+
+<nav class="bottom-nav">
+  <button onclick="go('index.html')" class="active">Home</button>
+  <button onclick="go('status.html')">Status</button>
+  <button onclick="go('services.html')">Services</button>
+  <button onclick="go('faq.html')">FAQ</button>
+</nav>
+
+</body>
+  </html>
