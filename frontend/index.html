@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BasseinPay - Digital Exchange (Mobile UI)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        :root {
+            --telegram-blue: #37aee2;
+            --dark-bg: #1e2832;
+            --dark-card: #27333d;
+            --light-bg: #f5f5f5;
+            --light-card: #ffffff;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+        .dark {
+            background-color: var(--dark-bg);
+            color: #e5e7eb;
+        }
+        .light {
+            background-color: var(--light-bg);
+            color: #1f2937;
+        }
+        .btn-primary {
+            background-color: var(--telegram-blue);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn-primary:hover {
+            background-color: #319bd6;
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        .page-transition {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .touch-target {
+            min-height: 48px;
+        }
+    </style>
+</head>
+<body class="dark" x-data="{ open: false }">
+
+    <div id="app-container" class="min-h-screen max-w-lg mx-auto shadow-2xl flex flex-col bg-gray-900 transition-colors duration-300">
+
+        <main id="main-content" class="flex-grow p-4 pb-20 overflow-y-auto page-transition"></main>
+
+        <nav id="bottom-nav" class="fixed bottom-0 w-full max-w-lg mx-auto bg-gray-800 dark:bg-gray-800 shadow-2xl border-t border-gray-700 z-50">
+            <div class="flex justify-around items-center h-16">
+                <button data-view="dashboard" class="nav-item flex flex-col items-center justify-center p-2 text-blue-500 transition-colors">
+                    <i data-lucide="home" class="w-6 h-6"></i>
+                    <span class="text-xs mt-0.5">မူလစာမျက်နှာ</span>
+                </button>
+                <button data-view="services" class="nav-item flex flex-col items-center justify-center p-2 text-gray-400 hover:text-blue-500 transition-colors">
+                    <i data-lucide="blocks" class="w-6 h-6"></i>
+                    <span class="text-xs mt-0.5">ဝန်ဆောင်မှုများ</span>
+                </button>
+                <button data-view="status" class="nav-item flex flex-col items-center justify-center p-2 text-gray-400 hover:text-blue-500 transition-colors">
+                    <i data-lucide="rotate-cw" class="w-6 h-6"></i>
+                    <span class="text-xs mt-0.5">အခြေအနေ</span>
+                </button>
+                <button data-view="faq" class="nav-item flex flex-col items-center justify-center p-2 text-gray-400 hover:text-blue-500 transition-colors">
+                    <i data-lucide="help-circle" class="w-6 h-6"></i>
+                    <span class="text-xs mt-0.5">မေးလေ့ရှိသည်များ</span>
+                </button>
+            </div>
+        </nav>
+
+        <div id="toast-container" class="fixed top-4 left-0 right-0 z-[100] p-4 pointer-events-none"></div>
+    </div>
+
+    <script>
+        const GAS_WEB_APP_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+        const ADMIN_PHONE = '09-1234567';
+        const TELEGRAM_GROUP_LINK = 'https://t.me/basseinpay_support';
+        const APP_STATE = {
+            currentView: 'dashboard',
+            theme: 'dark',
+            isSubmitting: false,
+            mockOrders: [],
+            adminPhone: ADMIN_PHONE,
+        };
+
+        const SIM_PACKAGES = [
+            { provider: 'Ooredoo', name: '1000 MB (7 Days)', price: 1000 },
+            { provider: 'Ooredoo', name: '3000 MB (30 Days)', price: 3000 },
+            { provider: 'MPT', name: '500 MB (3 Days)', price: 500 },
+            { provider: 'MPT', name: '2000 MB (30 Days)', price: 2500 },
+        ];
+
+        const GAME_ITEMS = [
+            { game: 'Mobile Legends', name: '50 Diamonds', price: 1500, icon: 'gamepad' },
+            { game: 'Mobile Legends', name: '100 Diamonds', price: 2800, icon: 'gamepad' },
+            { game: 'PUBG Mobile', name: '60 UC', price: 2000, icon: 'swords' },
+            { game: 'PUBG Mobile', name: '180 UC', price: 5500, icon: 'swords' },
+        ];
+
+        const P2P_RATES = {
+            'KBZ Pay': { 'WavePay': 1.025, 'Bank': 1.05 },
+            'WavePay': { 'KBZ Pay': 0.98, 'Bank': 1.01 },
+            'Bank': { 'KBZ Pay': 0.96, 'WavePay': 0.99 },
+        };
+
+        const SMM_SERVICES = {
+            Facebook: [
+                { type: 'Page Likes', rate: 5, unit: 'per 1000' },
+                { type: 'Post Likes', rate: 2, unit: 'per 1000' },
+            ],
+            Instagram: [
+                { type: 'Followers', rate: 10, unit: 'per 1000' },
+                { type: 'Likes', rate: 3, unit: 'per 1000' },
+            ],
+        };
+
+        const FAQ_DATA = [
+            { q: 'Order တွေ ဘယ်လောက်ကြာရင် ပြီးပါသလဲ?', a: 'Order အများစုဟာ ၅ မိနစ်ကနေ ၁၅ မိနစ်အတွင်း အောင်မြင်ပါတယ်။' },
+            { q: 'ငွေပေးချေမှု နည်းလမ်းတွေက ဘာတွေလဲ?', a: 'KBZ Pay, WavePay, AYA Pay တို့ဖြင့် ငွေပေးချေနိုင်ပါတယ်။' },
+            { q: 'Telegram Group ကို ဘယ်လို join ရမလဲ?', a: 'Order အောင်မြင်ပြီးနောက် Group Link ကို ပြသပေးပါမယ်။' }
+        ];
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const color = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-500');
+
+            const toast = document.createElement('div');
+            toast.className = `p-3 my-1 ${color} text-white rounded-xl shadow-xl transition-all duration-300 transform translate-y-full opacity-0 max-w-xs mx-auto text-sm`;
+            toast.textContent = message;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-full', 'opacity-0');
+                toast.style.transform = 'translateY(0)';
+                toast.style.opacity = '1';
+            }, 10);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(-20px)';
+                toast.style.opacity = '0';
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 3000);
+        }
+
+        function playFeedback(type) {
+            try {
+                const synth = new Tone.Synth().toDestination();
+                if (type === 'success') {
+                    synth.triggerAttackRelease("C5", "8n");
+                } else if (type === 'error') {
+                    synth.triggerAttackRelease("C3", "8n");
+                }
+            } catch (e) {
+                console.error("Audio context error:", e);
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const container = document.getElementById('app-container');
+            const newTheme = body.classList.contains('dark') ? 'light' : 'dark';
+
+            if (newTheme === 'light') {
+                body.classList.replace('dark', 'light');
+                container.classList.replace('bg-gray-900', 'bg-gray-50');
+                container.classList.replace('dark:bg-gray-800', 'bg-white');
+            } else {
+                body.classList.replace('light', 'dark');
+                container.classList.replace('bg-gray-50', 'bg-gray-900');
+                container.classList.replace('bg-white', 'dark:bg-gray-800');
+            }
+            APP_STATE.theme = newTheme;
+            localStorage.setItem('theme', newTheme);
+            lucide.createIcons();
+        }
+
+        function switchView(viewName, data = {}) {
+            if (APP_STATE.currentView === viewName) return;
+
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = '';
+            APP_STATE.currentView = viewName;
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.dataset.view === viewName) {
+                    item.classList.add('text-blue-500');
+                    item.classList.remove('text-gray-400');
+                } else {
+                    item.classList.remove('text-blue-500');
+                    item.classList.add('text-gray-400');
+                }
+            });
+
+            const content = getRenderFunction(viewName)(data);
+            mainContent.innerHTML = content;
+
+            setupViewListeners(viewName);
+            lucide.createIcons();
+        }
+
+        function getRenderFunction(viewName) {
+            switch (viewName) {
+                case 'dashboard': return renderDashboard;
+                case 'order_sim': return renderOrderSim;
+                case 'order_game': return renderOrderGame;
+                case 'order_smm': return renderOrderSMM;
+                case 'pay': return renderPay;
+                case 'status': return renderStatus;
+                case 'services': return renderServices;
+                case 'faq': return renderFAQ;
+                case 'maintenance': return renderMaintenance;
+                case 'confirmation': return renderConfirmation;
+                default: return renderDashboard;
+            }
+        }
+
+        function fetchMockOrders() {
+            const statuses = ['Pending', 'Completed', 'Failed'];
+            APP_STATE.mockOrders = Array(15).fill(0).map((_, i) => ({
+                id: `BP${1000 + i}`,
+                type: i % 3 === 0 ? 'SIM' : (i % 3 === 1 ? 'Game' : 'P2P'),
+                service: `Service ${i+1}`,
+                total: (1000 + i * 100),
+                status: statuses[i % 3],
+                date: new Date(Date.now() - i * 3600000).toLocaleString()
+            })).sort((a, b) => b.id.localeCompare(a.id));
+        }
+
+        function initApp() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme && savedTheme !== APP_STATE.theme) {
+                toggleTheme();
+            }
+
+            fetchMockOrders();
+
+            document.querySelectorAll('.nav-item').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const viewName = e.currentTarget.dataset.view;
+                    switchView(viewName);
+                });
+            });
+
+            switchView('dashboard');
+            showToast('BasseinPay App စတင်ပါပြီ။', 'info');
+        }
+
+        async function handleFormSubmit(event, action) {
+            event.preventDefault();
+
+            if (APP_STATE.isSubmitting) return;
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            data.action = action;
+
+            if (data.total === '0' || !data.total) {
+                showToast('ကျေးဇူးပြု၍ ဝန်ဆောင်မှုကို ရွေးချယ်ပါ။', 'error');
+                return;
+            }
+            if (!data.transactionId) {
+                showToast('လွှဲပြောင်းနံပါတ် (Transaction ID) လိုအပ်ပါသည်။', 'error');
+                return;
+            }
+
+            APP_STATE.isSubmitting = true;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.innerHTML = '<i data-lucide="loader" class="animate-spin w-5 h-5 mr-2"></i> စစ်ဆေးနေပါသည်...';
+            submitBtn.disabled = true;
+            lucide.createIcons();
+
+            try {
+                const response = await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams(data)
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const result = await response.json();
+                console.log('GAS Response:', result);
+
+                if (result.success) {
+                    playFeedback('success');
+                    switchView('confirmation', { orderId: result.orderId || `BP${Date.now().toString().slice(-4)}`, type: result.type || action.split('_')[1].toUpperCase(), total: data.total });
+                } else {
+                    playFeedback('error');
+                    showToast(result.error || 'Order တင်သွင်းမှု မအောင်မြင်ပါ။', 'error');
+                }
+            } catch (error) {
+                playFeedback('error');
+                console.error('Submission Error:', error);
+                switchView('maintenance');
+            } finally {
+                APP_STATE.isSubmitting = false;
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+      function setupViewListeners(viewName) {
+            switch (viewName) {
+                case 'order_sim':
+                    document.getElementById('sim-form').addEventListener('submit', (e) => handleFormSubmit(e, 'submit_sim_game'));
+                    document.getElementById('service-select').addEventListener('change', updateSimCalculation);
+                    break;
+                case 'order_game':
+                    document.getElementById('game-form').addEventListener('submit', (e) => handleFormSubmit(e, 'submit_sim_game'));
+                    document.getElementById('game-select').addEventListener('change', updateGameCalculation);
+                    break;
+                case 'order_smm':
+                    document.getElementById('smm-form').addEventListener('submit', (e) => handleFormSubmit(e, 'submit_smm'));
+                    document.getElementById('platform-select').addEventListener('change', updateSMMDropdowns);
+                    document.getElementById('service-type-select').addEventListener('change', updateSMMCalculation);
+                    document.getElementById('quantity-input').addEventListener('input', updateSMMCalculation);
+                    updateSMMDropdowns();
+                    break;
+                case 'pay':
+                    document.getElementById('p2p-form').addEventListener('submit', (e) => handleFormSubmit(e, 'submit_p2p'));
+                    document.getElementById('from-method').addEventListener('change', updateP2PCalculation);
+                    document.getElementById('to-method').addEventListener('change', updateP2PCalculation);
+                    document.getElementById('amount-sent').addEventListener('input', updateP2PCalculation);
+                    updateP2PCalculation();
+                    break;
+                case 'status':
+                    document.getElementById('refresh-button').addEventListener('click', () => {
+                        fetchMockOrders();
+                        switchView('status');
+                        showToast('Order status အသစ်ပြောင်းလဲပြီးပါပြီ။', 'info');
+                    });
+                    break;
+            }
+            document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+        }
+
+        function updateSimCalculation() {
+            const select = document.getElementById('service-select');
+            const totalDisplay = document.getElementById('sim-total');
+            const descriptionDisplay = document.getElementById('sim-description');
+            const totalInput = document.getElementById('total-input-sim');
+            const selectedPackage = SIM_PACKAGES.find(p => p.name === select.value);
+
+            if (selectedPackage) {
+                const total = selectedPackage.price;
+                totalDisplay.textContent = `${total.toLocaleString()} MMK`;
+                descriptionDisplay.textContent = `သင်မှာယူမည့်ဝန်ဆောင်မှု: ${selectedPackage.provider} ${selectedPackage.name}`;
+                totalInput.value = total;
+            } else {
+                totalDisplay.textContent = '0 MMK';
+                descriptionDisplay.textContent = 'ကျေးဇူးပြု၍ package ရွေးပါ။';
+                totalInput.value = 0;
+            }
+        }
+
+        function updateGameCalculation() {
+            const select = document.getElementById('game-select');
+            const totalDisplay = document.getElementById('game-total');
+            const totalInput = document.getElementById('total-input-game');
+            const selectedItem = GAME_ITEMS.find(i => i.name === select.value);
+
+            if (selectedItem) {
+                const total = selectedItem.price;
+                totalDisplay.textContent = `${total.toLocaleString()} MMK`;
+                totalInput.value = total;
+            } else {
+                totalDisplay.textContent = '0 MMK';
+                totalInput.value = 0;
+            }
+        }
+
+        function updateSMMDropdowns() {
+            const platformSelect = document.getElementById('platform-select');
+            const serviceSelect = document.getElementById('service-type-select');
+            const selectedPlatform = platformSelect.value;
+            serviceSelect.innerHTML = SMM_SERVICES[selectedPlatform].map(s => `<option value="${s.type}">${s.type}</option>`).join('');
+            updateSMMCalculation();
+        }
+
+        function updateSMMCalculation() {
+            const platform = document.getElementById('platform-select').value;
+            const serviceType = document.getElementById('service-type-select').value;
+            let quantity = parseInt(document.getElementById('quantity-input').value) || 0;
+
+            const service = SMM_SERVICES[platform].find(s => s.type === serviceType);
+            const costDisplay = document.getElementById('smm-cost-preview');
+            const totalInput = document.getElementById('total-input-smm');
+
+            if (service && quantity > 0) {
+                const units = Math.ceil(quantity / 1000);
+                const totalCost = units * service.rate;
+
+                costDisplay.innerHTML = `နှုန်းထား: ${service.rate} MMK / ${service.unit}<br>ယူနစ်: ${units} x ${service.rate}<br>စုစုပေါင်းတန်ဖိုး: <span class="text-lg font-bold text-blue-400">${totalCost.toLocaleString()} MMK</span>`;
+                totalInput.value = totalCost;
+            } else {
+                costDisplay.innerHTML = 'စုစုပေါင်းတန်ဖိုး: <span class="text-lg font-bold">0 MMK</span>';
+                totalInput.value = 0;
+            }
+        }
+
+        function updateP2PCalculation() {
+            const fromMethod = document.getElementById('from-method').value;
+            const toMethod = document.getElementById('to-method').value;
+            const amountSent = parseFloat(document.getElementById('amount-sent').value) || 0;
+
+            const receiveDisplay = document.getElementById('p2p-receive-amount');
+            const feeDisplay = document.getElementById('p2p-fee-breakdown');
+            const totalReceiveInput = document.getElementById('total-receive-input');
+
+            if (fromMethod && toMethod && amountSent > 0 && P2P_RATES[fromMethod] && P2P_RATES[fromMethod][toMethod]) {
+                const rate = P2P_RATES[fromMethod][toMethod];
+                const amountReceive = amountSent * rate;
+                const feeAmount = amountSent - amountReceive;
+
+                receiveDisplay.textContent = `${amountReceive.toFixed(2).toLocaleString()} MMK`;
+                feeDisplay.innerHTML = `
+                    <p class="text-xs text-gray-400">လဲလှယ်နှုန်း: 1 ${fromMethod} = ${rate.toFixed(3)} ${toMethod}</p>
+                    <p class="text-xs text-red-400">အခကြေးငွေ/ခြားနားချက်: ${feeAmount.toFixed(2)} MMK</p>
+                `;
+                totalReceiveInput.value = amountReceive.toFixed(2);
+            } else {
+                receiveDisplay.textContent = '0.00 MMK';
+                feeDisplay.innerHTML = '';
+                totalReceiveInput.value = 0;
+            }
+        }
+
+        function renderDashboard() {
+            return `
+                <header class="flex justify-between items-center mb-4">
+                    <h1 class="text-2xl font-bold text-blue-400">BasseinPay</h1>
+                    <button id="theme-toggle" class="p-2 rounded-full text-gray-400 hover:text-blue-400 transition-colors">
+                        <i data-lucide="${APP_STATE.theme === 'dark' ? 'sun' : 'moon'}" class="w-6 h-6"></i>
+                    </button>
+                </header>
+      <div class="bg-gray-800 dark:bg-gray-800 p-4 rounded-xl shadow-lg mb-6 border border-blue-500/30">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-yellow-400 mr-3"></i>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-200">အက်ဒမင်ဖုန်းနံပါတ်</p>
+                                <p class="text-xl font-bold text-white touch-target">${APP_STATE.adminPhone}</p>
+                            </div>
+                        </div>
+                        <a href="tel:${APP_STATE.adminPhone}" class="btn-primary text-white p-2 rounded-full shadow-md">
+                            <i data-lucide="phone" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <h2 class="text-lg font-semibold mb-3 text-gray-200">အမြန်ဝန်ဆောင်မှုများ</h2>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    ${renderServiceCard('order_sim', 'ဖုန်းဘေ/ဒေတာ', 'Zap', 'blue-500')}
+                    ${renderServiceCard('order_game', 'ဂိမ်းငွေဖြည့်ခြင်း', 'Gamepad2', 'green-500')}
+                    ${renderServiceCard('order_smm', 'လူမှုကွန်ယက်ဝန်ဆောင်မှု', 'Rocket', 'purple-500')}
+                    ${renderServiceCard('pay', 'ငွေလွှဲပြောင်းလဲခြင်း', 'Wallet', 'yellow-500')}
+                </div>
+
+                <h2 class="text-lg font-semibold mb-3 text-gray-200">အထူးအစီအစဉ်</h2>
+                <div class="bg-gray-700/50 p-4 rounded-xl shadow-lg h-32 flex items-center justify-center text-center text-gray-300">
+                    <p class="text-sm">ယနေ့ Mobile Legends Diamonds အားလုံး ၅% လျှော့စျေး! <br> </p>
+                </div>
+            `;
+        }
+
+        function renderServiceCard(view, title, icon, color) {
+            return `
+                <button data-view="${view}" class="nav-item flex flex-col items-center justify-center bg-gray-800 dark:bg-gray-800 p-4 rounded-xl shadow-lg border-2 border-transparent hover:border-${color} transition-all touch-target">
+                    <div class="p-3 rounded-full bg-gray-700/50 mb-2">
+                        <i data-lucide="${icon}" class="w-6 h-6 text-${color}"></i>
+                    </div>
+                    <span class="text-sm font-medium text-gray-200">${title}</span>
+                </button>
+            `;
+        }
+
+        function renderOrderSim() {
+            const providers = [...new Set(SIM_PACKAGES.map(p => p.provider))];
+            const options = SIM_PACKAGES.map(p => `<option value="${p.name}">${p.provider} - ${p.name} (${p.price.toLocaleString()} MMK)</option>`).join('');
+
+            return `
+                <header class="flex items-center justify-between mb-6">
+                    <button onclick="switchView('dashboard')" class="text-gray-400 hover:text-blue-500"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                    <h1 class="text-xl font-semibold text-gray-100">SIM ဘေ/ဒေတာ ဝန်ဆောင်မှု</h1>
+                    <div class="w-6 h-6"></div>
+                </header>
+
+                <form id="sim-form" class="space-y-4 bg-gray-800 p-5 rounded-xl shadow-lg">
+                    ${renderFormGroup('ဖုန်းနံပါတ်', 'tel', 'target', 'ဥပမာ၊ 09xxxxxxxxx', true)}
+
+                    <div class="space-y-1">
+                        <label for="service-select" class="text-sm font-medium text-gray-400">ဝန်ဆောင်မှုနှင့် Package</label>
+                        <select id="service-select" name="service" required class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white touch-target">
+                            <option value="">-- Package ရွေးချယ်ပါ --</option>
+                            ${options}
+                        </select>
+                    </div>
+
+                    <p id="sim-description" class="text-sm italic text-blue-400 mt-2 bg-gray-700 p-3 rounded-lg">ကျေးဇူးပြု၍ package ရွေးပါ။</p>
+
+                    ${renderFormGroup('ငွေပေးချေမှု နည်းလမ်း', 'text', 'paymentMethod', 'KBZ Pay / WavePay', true)}
+                    ${renderFormGroup('လွှဲပြောင်းနံပါတ် (Transaction ID)', 'text', 'transactionId', 'ဥပမာ၊ 1234567890', true)}
+                    <input type="hidden" name="quantity" value="1">
+                    <input type="hidden" id="total-input-sim" name="total" value="0">
+
+                    <div class="flex justify-between items-center pt-4 border-t border-gray-700">
+                        <p class="text-lg font-semibold text-gray-300">စုစုပေါင်း ပေးချေရန်:</p>
+                        <p id="sim-total" class="text-2xl font-bold text-green-400">0 MMK</p>
+                    </div>
+
+                    <button type="submit" class="w-full btn-primary text-white p-3 rounded-xl font-semibold mt-6 touch-target" ${APP_STATE.isSubmitting ? 'disabled' : ''}>
+                        အော်ဒါတင်သွင်းမည်
+                    </button>
+                </form>
+            `;
+        }
+
+      function renderOrderGame() {
+            const options = GAME_ITEMS.map(i => `<option value="${i.name}">${i.game} - ${i.name} (${i.price.toLocaleString()} MMK)</option>`).join('');
+
+            return `
+                <header class="flex items-center justify-between mb-6">
+                    <button onclick="switchView('dashboard')" class="text-gray-400 hover:text-blue-500"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                    <h1 class="text-xl font-semibold text-gray-100">ဂိမ်းငွေဖြည့်ခြင်း ဝန်ဆောင်မှု</h1>
+                    <div class="w-6 h-6"></div>
+                </header>
+
+                <form id="game-form" class="space-y-4 bg-gray-800 p-5 rounded-xl shadow-lg">
+                    <div class="space-y-1">
+                        <label for="game-select" class="text-sm font-medium text-gray-400">ဂိမ်းနှင့် Item</label>
+                        <select id="game-select" name="service" required class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white touch-target">
+                            <option value="">-- Game Item ရွေးချယ်ပါ --</option>
+                            ${options}
+                        </select>
+                    </div>
+
+                    ${renderFormGroup('Game ID + Server ID', 'text', 'target', 'ဥပမာ၊ 12345678 (1234)', true)}
+                    ${renderFormGroup('ငွေပေးချေမှု နည်းလမ်း', 'text', 'paymentMethod', 'KBZ Pay / WavePay', true)}
+                    ${renderFormGroup('လွှဲပြောင်းနံပါတ် (Transaction ID)', 'text', 'transactionId', 'ဥပမာ၊ 1234567890', true)}
+                    <input type="hidden" name="quantity" value="1">
+                    <input type="hidden" id="total-input-game" name="total" value="0">
+
+                    <div class="flex justify-between items-center pt-4 border-t border-gray-700">
+                        <p class="text-lg font-semibold text-gray-300">စုစုပေါင်း ပေးချေရန်:</p>
+                        <p id="game-total" class="text-2xl font-bold text-green-400">0 MMK</p>
+                    </div>
+
+                    <button type="submit" class="w-full btn-primary text-white p-3 rounded-xl font-semibold mt-6 touch-target" ${APP_STATE.isSubmitting ? 'disabled' : ''}>
+                        အော်ဒါတင်သွင်းမည်
+                    </button>
+                </form>
+            `;
+        }
+
+        function renderOrderSMM() {
+            const platforms = Object.keys(SMM_SERVICES).map(p => `<option value="${p}">${p}</option>`).join('');
+            return `
+                <header class="flex items-center justify-between mb-6">
+                    <button onclick="switchView('dashboard')" class="text-gray-400 hover:text-blue-500"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                    <h1 class="text-xl font-semibold text-gray-100">လူမှုကွန်ယက်ဝန်ဆောင်မှု (SMM)</h1>
+                    <div class="w-6 h-6"></div>
+                </header>
+
+                <form id="smm-form" class="space-y-4 bg-gray-800 p-5 rounded-xl shadow-lg">
+                    <div class="space-y-1">
+                        <label for="platform-select" class="text-sm font-medium text-gray-400">Platform</label>
+                        <select id="platform-select" name="platform" required class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white touch-target">
+                            ${platforms}
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="service-type-select" class="text-sm font-medium text-gray-400">ဝန်ဆောင်မှု အမျိုးအစား</label>
+                        <select id="service-type-select" name="serviceType" required class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white touch-target">
+                        </select>
+                    </div>
+
+                    ${renderFormGroup('Target URL/လင့်ခ်', 'url', 'targetUrl', 'ဥပမာ၊ https://facebook.com/post123', true)}
+
+                    <div class="space-y-1">
+                        <label for="quantity-input" class="text-sm font-medium text-gray-400">အရေအတွက် (အနည်းဆုံး ၁၀၀၀)</label>
+                        <input type="number" id="quantity-input" name="quantity" required min="1000" step="1000" value="1000" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white touch-target">
+                    </div>
+
+                    <div id="smm-cost-preview" class="bg-gray-700 p-3 rounded-lg text-gray-300">
+                    </div>
+
+                    ${renderFormGroup('ငွေပေးချေမှု နည်းလမ်း', 'text', 'paymentMethod', 'KBZ Pay / WavePay', true)}
+                    ${renderFormGroup('လွှဲပြောင်းနံပါတ် (Transaction ID)', 'text', 'transactionId', 'ဥပမာ၊ 1234567890', true)}
+                    <input type="hidden" id="total-input-smm" name="total" value="0">
+
+                    <button type="submit" class="w-full btn-primary text-white p-3 rounded-xl font-semibold mt-6 touch-target" ${APP_STATE.isSubmitting ? 'disabled' : ''}>
+                        အော်ဒါတင်သွင်းမည်
+                    </button>
+                </form>
+            `;
+        }
+
+        function renderPay() {
+            const methods = Object.keys(P2P_RATES).map(m => `<option value="${m}">${m}</option>`).join('');
+
+            return `
+                <header class="flex items-center justify-between mb-6">
+                    <button onclick="switchView('dashboard')" class="text-gray-400 hover:text-blue-500"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                    <h1 class="text-xl font-semibold text-gray-100">P2P ငွေလွှဲပြောင်းလဲခြင်း</h1>
+                    <div class="w-6 h-6"></div>
+                </header>
+
+                <form id="p2p-form" class="space-y-4 bg-gray-800 p-5 rounded-xl shadow-lg">
+                    <div class="flex space-x-4">
+                        <div class="w-1/2 space-y-1">
+                            <label for="from-method" class="text-sm font-medium text-gray-400">ပို့မည့်နည်းလမ်း</label>
+                            <select id="from-method" name="fromMethod" required class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white touch-target">
+                                <option value="">-- ရွေးပါ --</option>
+                                ${methods}
+                            </select>
+                        </div>
+                        <div class="w-1/2 space-y-1">
+                            <label for="to-method" class="text-sm font-medium text-gray-400">လက်ခံမည့်နည်းလမ်း</label>
+                            <select id="to-method" name="toMethod" required class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white touch-target">
+                                <option value="">-- ရွေးပါ --</option>
+                                ${methods}
+                            </select>
+                        </div>
+                    </div>
+
+                    ${renderFormGroup('ပို့မည့်ပမာဏ (MMK)', 'number', 'amountSent', 'အနည်းဆုံး 5000', true, 'amount-sent')}
+                    ${renderFormGroup('သင့်အကောင့်အသေးစိတ်', 'text', 'accountDetails', 'ဥပမာ၊ KBZ 091234567, Name', true)}
+                    ${renderFormGroup('လွှဲပြောင်းနံပါတ် (Transaction ID)', 'text', 'transactionId', 'ဥပမာ၊ 1234567890', true)}
+                    <input type="hidden" id="total-receive-input" name="amountReceive" value="0">
+
+                    <div class="bg-gray-700 p-3 rounded-xl shadow-inner space-y-2">
+                        <div class="flex justify-between items-center">
+                            <p class="text-lg font-semibold text-gray-300">သင် လက်ခံရရှိမည့်ပမာဏ:</p>
+                            <p id="p2p-receive-amount" class="text-2xl font-bold text-yellow-400">0.00 MMK</p>
+                        </div>
+                        <div id="p2p-fee-breakdown" class="text-right">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full btn-primary text-white p-3 rounded-xl font-semibold mt-6 touch-target" ${APP_STATE.isSubmitting ? 'disabled' : ''}>
+                        ငွေလွှဲပြောင်းရန် တင်သွင်းမည်
+                    </button>
+                </form>
+            `;
+        }
+
+        function renderFormGroup(label, type, name, placeholder, required = false, id = name) {
+            const requiredAttr = required ? 'required' : '';
+            return `
+                <div class="space-y-1">
+                    <label for="${id}" class="text-sm font-medium text-gray-400">${label}</label>
+                    <input type="${type}" id="${id}" name="${name}" placeholder="${placeholder}" ${requiredAttr}
+                        class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white touch-target"
+                    >
+                </div>
+            `;                                                                                                                      
+      }
+
+        function renderStatus() {
+            const renderOrderCard = (order) => {
+                let color, icon;
+                switch (order.status) {
+                    case 'Completed': color = 'green'; icon = 'check-circle'; break;
+                    case 'Failed': color = 'red'; icon = 'x-circle'; break;
+                    default: color = 'yellow'; icon = 'loader'; break;
+                }
+
+                return `
+                    <div class="bg-gray-800 p-4 rounded-xl shadow-lg border-l-4 border-${color}-500 mb-3">
+                        <div class="flex justify-between items-start mb-1">
+                            <p class="font-bold text-gray-100">${order.type} (${order.service})</p>
+                            <span class="text-xs text-gray-400">${order.date}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <p class="text-gray-300">Order ID: <span class="font-mono text-blue-400">${order.id}</span></p>
+                            <p class="font-semibold text-${color}-500 flex items-center">
+                                <i data-lucide="${icon}" class="w-4 h-4 mr-1"></i> ${order.status}
+                            </p>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-1">Total: ${order.total.toLocaleString()} MMK</p>
+                    </div>
+                `;
+            };
+
+            const pendingOrders = APP_STATE.mockOrders.filter(o => o.status === 'Pending').map(renderOrderCard).join('') || `<p class="text-center text-gray-500 p-8 bg-gray-800 rounded-xl">စောင့်ဆိုင်းနေသောအော်ဒါ မရှိပါ။</p>`;
+            const completedOrders = APP_STATE.mockOrders.filter(o => o.status === 'Completed').map(renderOrderCard).join('') || `<p class="text-center text-gray-500 p-8 bg-gray-800 rounded-xl">ပြီးစီးသောအော်ဒါ မရှိပါ။</p>`;
+            const failedOrders = APP_STATE.mockOrders.filter(o => o.status === 'Failed').map(renderOrderCard).join('') || `<p class="text-center text-gray-500 p-8 bg-gray-800 rounded-xl">ပျက်ကွက်သောအော်ဒါ မရှိပါ။</p>`;
+
+            return `
+                <header class="flex items-center justify-between mb-6">
+                    <h1 class="text-2xl font-bold text-gray-100">အော်ဒါ အခြေအနေ</h1>
+                    <button id="refresh-button" class="btn-primary text-white p-2 rounded-full shadow-md transition-transform active:rotate-180">
+                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    </button>
+                </header>
+
+                <div x-data="{ activeTab: 'pending' }" class="space-y-4">
+                    <div class="flex bg-gray-800 rounded-xl p-1 shadow-inner sticky top-0 z-10">
+                        ${renderTabButton('pending', 'စောင့်ဆိုင်းဆဲ', 'yellow-400')}
+                        ${renderTabButton('completed', 'ပြီးစီးပြီ', 'green-400')}
+                        ${renderTabButton('failed', 'မအောင်မြင်', 'red-400')}
+                    </div>
+
+                    <div id="status-content">
+                        <div x-show="activeTab === 'pending'" id="pending-list" class="pt-2">${pendingOrders}</div>
+                        <div x-show="activeTab === 'completed'" id="completed-list" class="pt-2" style="display:none;">${completedOrders}</div>
+                        <div x-show="activeTab === 'failed'" id="failed-list" class="pt-2" style="display:none;">${failedOrders}</div>
+                    </div>
+                </div>
+
+                <p class="text-xs text-center text-gray-500 mt-6">နောက်ဆုံး အော်ဒါ ၁၅ ခုကို ပြသထားပါသည်။</p>
+            `;
+        }
+
+        function renderTabButton(tabName, label, color) {
+            return `
+                <button @click="activeTab = '${tabName}'"
+                    :class="{ 'bg-gray-700 text-${color}': activeTab === '${tabName}', 'text-gray-400': activeTab !== '${tabName}' }"
+                    class="flex-1 p-2 rounded-lg font-medium transition-all touch-target"
+                >
+                    ${label}
+                </button>
+            `;
+        }
+
+        function renderServices() {
+            const allServices = [
+                { category: 'SIM/Data', name: 'Ooredoo 30 Days', price: 3000, desc: '3000MB data, 30 days.' },
+                { category: 'SIM/Data', name: 'MPT 1 Day', price: 500, desc: '500MB data, 1 day.' },
+                { category: 'Game Top-Up', name: 'MLBB 100 Diamonds', price: 2800, desc: 'Instant top-up via Game ID.' },
+                { category: 'Game Top-Up', name: 'PUBG 60 UC', price: 2000, desc: 'Instant top-up via Player ID.' },
+                { category: 'SMM', name: 'Facebook Page Likes', price: 5, unit: 'per 1000' },
+                { category: 'SMM', name: 'Instagram Followers', price: 10, unit: 'per 1000' },
+                { category: 'P2P Exchange', name: 'KBZ Pay to WavePay', price: '1.025 Rate', desc: 'Exchange money instantly.' },
+            ];
+
+            const categories = [...new Set(allServices.map(s => s.category))];
+            const content = categories.map(cat => {
+                const items = allServices.filter(s => s.category === cat).map(item => `
+                    <div class="bg-gray-700/50 p-3 rounded-lg flex justify-between items-center mb-2 shadow-inner">
+                        <div>
+                            <p class="font-medium text-gray-100">${item.name}</p>
+                            <p class="text-xs text-gray-400">${item.desc || ''}</p>
+                        </div>
+                        <span class="text-lg font-bold text-yellow-400">${item.price.toLocaleString()}</span>
+                    </div>
+                `).join('');
+                return `
+                    <h3 class="text-lg font-semibold text-blue-400 mt-4 mb-2">${cat}</h3>
+                    ${items}
+                `;
+            }).join('');
+
+
+            return `
+                <header class="flex items-center justify-between mb-6">
+                    <h1 class="text-2xl font-bold text-gray-100">ဝန်ဆောင်မှု စာရင်းနှင့် ဈေးနှုန်း</h1>
+                </header>
+
+                <div class="relative mb-4">
+                    <input type="text" placeholder="ဝန်ဆောင်မှု ရှာဖွေပါ..." class="w-full p-3 bg-gray-800 border border-gray-600 rounded-xl text-white touch-target">
+                    <i data-lucide="search" class="w-5 h-5 absolute right-3 top-3.5 text-gray-400"></i>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded-xl shadow-lg">
+                    ${content}
+                </div>
+            `;
+        }
+
+        function renderFAQ() {
+            const accordionItems = FAQ_DATA.map((item, index) => `
+                <div class="border-b border-gray-700" x-data="{ open: false }">
+                    <button @click="open = !open" class="flex justify-between items-center w-full p-4 text-left font-medium text-gray-100 touch-target">
+                        <span>${item.q}</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5 transition-transform" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" x-collapse.duration.300ms class="p-4 pt-0 text-gray-300 text-sm bg-gray-700/50 rounded-b-lg">
+                        ${item.a}
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <header class="flex items-center justify-between mb-6">
+                    <h1 class="text-2xl font-bold text-gray-100">မေးလေ့ရှိသည်များနှင့် Support</h1>
+                </header>
+
+                <div class="bg-gray-800 rounded-xl shadow-lg" x-data="{}" >
+                    ${accordionItems}
+                </div>
+
+                <div class="mt-6 p-4 bg-gray-800 rounded-xl shadow-lg text-center">
+                    <p class="text-gray-300 mb-3">မေးစရာရှိပါက ကျွန်တော်တို့ရဲ့ support အဖွဲ့ကို တိုက်ရိုက်ဆက်သွယ်နိုင်ပါတယ်။</p>
+                    <a href="${TELEGRAM_GROUP_LINK}" target="_blank" class="btn-primary text-white p-3 rounded-xl font-semibold inline-flex items-center">
+                        <i data-lucide="send" class="w-5 h-5 mr-2"></i> Telegram Support သို့ ဝင်မည်
+                    </a>
+                </div>
+            `;
+        }
+
+        function renderMaintenance() {
+            return `
+                <div class="flex flex-col items-center justify-center h-[calc(100vh-10rem)] text-center p-8 bg-gray-800 rounded-xl shadow-2xl mt-10">
+                    <i data-lucide="wrench" class="w-16 h-16 text-red-500 mb-4 animate-pulse"></i>
+                    <h1 class="text-3xl font-bold text-red-400 mb-2">ဝန်ဆောင်မှု ခေတ္တရပ်နားထားသည်</h1>
+                    <p class="text-lg text-gray-300 mb-4">ကျွန်ုပ်တို့သည် ဝန်ဆောင်မှု ပိုမိုကောင်းမွန်စေရန် ပြင်ဆင်နေပါသည်။</p>
+                    <p class="text-sm text-gray-400 mb-6">ခန့်မှန်းခြေ ပြန်လည်စတင်ချိန်: **2 နာရီ (12:00 PM)**</p>
+                    <div class="w-full space-y-3">
+                        <div class="flex justify-between text-sm text-gray-300">
+                            <span>SIM Recharge:</span>
+                            <span class="text-red-500 font-semibold flex items-center"><i data-lucide="x" class="w-4 h-4 mr-1"></i> ရပ်နား</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-300">
+                            <span>P2P Exchange:</span>
+                            <span class="text-yellow-500 font-semibold flex items-center"><i data-lucide="pause" class="w-4 h-4 mr-1"></i> ကန့်သတ်</span>
+                        </div>
+                    </div>
+                    <a href="tel:${APP_STATE.adminPhone}" class="mt-6 btn-primary text-white p-3 rounded-xl font-semibold inline-flex items-center">
+                        <i data-lucide="phone" class="w-5 h-5 mr-2"></i> အက်ဒမင်ကို ဆက်သွယ်ရန်
+                    </a>
+                </div>
+            `;
+        }
+
+        function renderConfirmation(data) {
+            const { orderId, type, total } = data;
+            return `
+                <div class="flex flex-col items-center justify-center h-[calc(100vh-10rem)] text-center p-8 bg-gray-800 rounded-xl shadow-2xl mt-10">
+                    <div class="mb-6">
+                        <i data-lucide="check-circle" class="w-16 h-16 text-green-500 animate-bounce"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-green-400 mb-4">အော်ဒါ အောင်မြင်ပါပြီ!</h1>
+
+                    <div class="w-full bg-gray-700 p-4 rounded-xl shadow-lg mb-6 text-left">
+                        <p class="text-sm font-semibold text-gray-400">အော်ဒါ အကျဉ်းချုပ်:</p>
+                        <p class="text-xl font-bold text-blue-400 mt-1">Order ID: <span class="font-mono">${orderId}</span></p>
+                        <p class="text-lg text-gray-300">အမျိုးအစား: ${type}</p>
+                        <p class="text-lg text-gray-300">စုစုပေါင်း: ${parseFloat(total).toLocaleString()} MMK</p>
+                    </div>
+
+                    <p class="text-gray-300 mb-4">သင်၏အော်ဒါကို မှတ်တမ်းတင်ထားပါသည်။ အခြေအနေ အမြန်ဆုံးသိရှိရန် Telegram Group သို့ ဝင်ရောက်နိုင်ပါသည်။</p>
+
+                    <a href="${TELEGRAM_GROUP_LINK}" target="_blank" class="w-full btn-primary text-white p-4 rounded-xl font-extrabold mt-3 shadow-2xl shadow-blue-500/50 touch-target transition-all hover:scale-[1.02]">
+                        <i data-lucide="telegram" class="w-6 h-6 mr-2"></i> Telegram Group သို့ ဝင်မည်
+                    </a>
+
+                    <button onclick="switchView('status')" class="text-blue-500 mt-4 text-sm hover:underline">
+                        အော်ဒါ အခြေအနေ စစ်ဆေးရန်
+                    </button>
+                </div>
+            `;
+        }
+
+        window.onload = function() {
+            initApp();
+        };
+
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.closest('#status-content')) {
+                const button = e.target.closest('button');
+                const container = button.closest('[x-data]');
+                if (container) {
+                    const tabName = button.getAttribute('@click').match(/'(.*)'/)?.[1];
+                    if (tabName) {
+                        container.setAttribute('x-data', `{ activeTab: '${tabName}' }`);
+                        document.querySelectorAll('#status-content > div').forEach(div => {
+                            if (div.id.startsWith(tabName)) {
+                                div.style.display = 'block';
+                            } else {
+                                div.style.display = 'none';
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
