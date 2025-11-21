@@ -290,7 +290,107 @@
             visibility: visible;
             opacity: 1;
             bottom: 50px;
+
+             /* =========================================
+           PROMOTION SLIDER STYLES (NEW)
+           ========================================= */
+        .promo-container {
+            width: 100%;
+            margin-bottom: 20px;
+            overflow: hidden; /* Hide overflow content */
+            border-radius: var(--radius-card);
+            box-shadow: 0 4px 12px rgba(34, 158, 217, 0.15);
+            position: relative;
         }
+
+        .promo-wrapper {
+            display: flex;
+            transition: transform 0.5s ease-in-out; /* Smooth slide animation */
+            width: 100%;
+        }
+
+        .promo-card {
+            min-width: 100%; /* Full width of container */
+            aspect-ratio: 16/9; /* 16:9 Ratio */
+            background: linear-gradient(135deg, var(--tg-blue), var(--tg-dark-blue));
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Discount Badge */
+        .promo-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: var(--tg-red);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .promo-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .promo-desc {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .promo-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto; /* Push to bottom */
+        }
+
+        .promo-price {
+            font-size: 22px;
+            font-weight: 700;
+            color: #FFD700; /* Gold color for price */
+        }
+
+        .promo-qty {
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* Slider Indicators (Dots) */
+        .slider-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+        .dot.active {
+            background-color: white;
+            width: 12px; /* Active dot is wider */
+            border-radius: 4px;
+            }
     </style>
 </head>
 <body>
@@ -376,6 +476,53 @@
                 </div>
             </a>
         </section>
+
+        <main class="container">
+        
+        <div style="font-size: 14px; color: #229ED9; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">
+            Hot Promotions
+        </div>
+
+        <!-- PROMOTION SLIDER SECTION -->
+        <div class="promo-container">
+            <div class="promo-wrapper" id="promoSlider">
+                
+                <!-- Slide 1 -->
+                <div class="promo-card">
+                    <div class="promo-badge">-50% OFF</div>
+                    <div class="promo-name">TikTok Followers</div>
+                    <div class="promo-desc">အကောင့်အသစ်များအတွက် အထူးဈေးနှုန်း။ Real Active Users.</div>
+                    <div class="promo-footer">
+                        <div class="promo-price">3,000 Ks</div>
+                        <div class="promo-qty">Qty: 50</div>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="promo-card" style="background: linear-gradient(135deg, #8E2DE2, #4A00E0);">
+                    <div class="promo-badge">-20% OFF</div>
+                    <div class="promo-name">Telegram Premium</div>
+                    <div class="promo-desc">၆ လစာ တရားဝင် Gift အကောင့်။ Warranty ပါဝင်သည်။</div>
+                    <div class="promo-footer">
+                        <div class="promo-price">15,000 Ks</div>
+                        <div class="promo-qty">Qty: 10</div>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="promo-card" style="background: linear-gradient(135deg, #F2994A, #F2C94C);">
+                    <div class="promo-badge" style="background-color: #000;">HOT</div>
+                    <div class="promo-name">PUBG UC Pack</div>
+                    <div class="promo-desc">600+60 UC (Global Code). Instant Delivery.</div>
+                    <div class="promo-footer">
+                        <div class="promo-price">8,000 Ks</div>
+                        <div class="promo-qty">Qty: 100</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        </main>
 
         <!-- Services Section -->
         <div class="section-title">Services</div>
@@ -617,6 +764,37 @@
                 });
             });
         });
+
+         // SLIDER LOGIC
+        const slider = document.getElementById('promoSlider');
+        const dots = document.querySelectorAll('.dot');
+        let currentSlide = 0;
+        const totalSlides = 3;
+
+        function updateSlider() {
+            // Move the slider Wrapper
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+            
+            // Update Dots
+            dots.forEach((dot, index) => {
+                if(index === currentSlide) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide++;
+            if (currentSlide >= totalSlides) {
+                currentSlide = 0; // Loop back to start
+            }
+            updateSlider();
+        }
+
+        // Auto slide every 5 seconds (5000ms)
+        setInterval(nextSlide, 5000);
     </script>
 </body>
 </html>
