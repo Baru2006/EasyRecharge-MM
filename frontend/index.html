@@ -2,32 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CK Hub</title>
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Roboto (Telegram uses a similar clean sans-serif) -->
+    <!-- Google Fonts: Roboto -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
         /* =========================================
-           1. CSS VARIABLES & RESET (style.css)
+           1. CSS VARIABLES & RESET
            ========================================= */
         :root {
-            /* Telegram Palette */
+            /* Telegram Palette Refined */
             --tg-blue: #229ED9;
             --tg-dark-blue: #1C85B8;
-            --tg-bg: #E8F6FB; /* Light blue background */
+            --tg-bg: #F0F2F5; /* Slightly darker for contrast on desktop */
             --tg-white: #FFFFFF;
             --tg-text: #1A1A1A;
             --tg-soft: #6E6E6E;
+            --tg-red: #FF3B30;
             --tg-border: #E1E8ED;
             
+            /* Modern Gradients */
+            --gradient-primary: linear-gradient(135deg, #229ED9 0%, #1C85B8 100%);
+            --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+            
             /* Spacing & Radius */
-            --radius-card: 14px;
-            --radius-btn: 10px;
-            --shadow-card: 0 4px 12px rgba(34, 158, 217, 0.08);
-            --shadow-active: 0 2px 5px rgba(34, 158, 217, 0.15);
+            --radius-card: 16px;
+            --radius-btn: 12px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 8px 24px rgba(34, 158, 217, 0.12);
+            --shadow-hover: 0 12px 32px rgba(34, 158, 217, 0.2);
         }
 
         * {
@@ -42,59 +48,77 @@
             background-color: var(--tg-bg);
             color: var(--tg-text);
             line-height: 1.5;
-            /* No footer, so we add bottom padding for scrolling */
-            padding-bottom: 40px;
+            min-height: 100vh;
+            /* Pattern Background for Laptop view */
+            background-image: radial-gradient(#229ED9 0.5px, transparent 0.5px), radial-gradient(#229ED9 0.5px, var(--tg-bg) 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
         }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Roboto', sans-serif; background-color: var(--tg-bg); color: var(--tg-text); padding-bottom: 40px; }
-        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
-        /* Utility for hidden elements */
-        .hidden { display: none; }
 
         /* =========================================
-           2. HEADER
+           2. LAYOUT CONTAINER (Responsive)
+           ========================================= */
+        .app-wrapper {
+            max-width: 480px; /* Mobile App Width */
+            margin: 0 auto;
+            background-color: #F7F9FC;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* On Mobile, remove margins to look native */
+        @media (max-width: 500px) {
+            .app-wrapper {
+                max-width: 100%;
+                box-shadow: none;
+            }
+            body {
+                background-image: none;
+                background-color: #F7F9FC;
+            }
+        }
+
+        .container {
+            padding: 16px;
+            padding-bottom: 80px; /* Space for scrolling */
+        }
+
+        /* =========================================
+           3. HEADER (Glassmorphism)
            ========================================= */
         header {
-            background: linear-gradient(90deg, var(--tg-blue), var(--tg-dark-blue));
-            color: var(--tg-white);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--tg-text);
             padding: 16px;
             text-align: center;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         header h1 {
             font-size: 20px;
-            font-weight: 700;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             letter-spacing: 0.5px;
         }
 
-        /* Container */
-        .container {
-            max-width: 600px; /* Mobile first, limited width on desktop */
-            margin: 0 auto;
-            padding: 16px;
-        }
-
         /* =========================================
-           3. ADMIN INFO SECTION
+           4. CARDS & SECTIONS
            ========================================= */
         .section-title {
-            font-size: 14px;
-            color: var(--tg-blue);
+            font-size: 13px;
+            color: var(--tg-soft);
             font-weight: 700;
             text-transform: uppercase;
-            margin-bottom: 10px;
-            margin-top: 20px;
-            padding-left: 4px;
+            letter-spacing: 1px;
+            margin: 24px 0 12px 4px;
         }
 
         .card {
@@ -102,222 +126,99 @@
             border-radius: var(--radius-card);
             padding: 16px;
             margin-bottom: 12px;
-            box-shadow: var(--shadow-card);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0,0,0,0.02);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: transform 0.1s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
         .card:active {
             transform: scale(0.98);
-            background-color: #F5F9FC;
         }
 
+        /* Admin Info Styling */
         .admin-item {
             display: flex;
             align-items: center;
             width: 100%;
             color: var(--tg-text);
+            z-index: 2;
         }
 
         .admin-icon {
-            width: 40px;
-            height: 40px;
-            background-color: var(--tg-bg);
-            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #E8F6FB 0%, #D1EEFA 100%);
+            border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
             color: var(--tg-blue);
             font-size: 18px;
-            margin-right: 15px;
+            margin-right: 16px;
             flex-shrink: 0;
+            transition: transform 0.3s;
         }
 
-        .admin-details {
-            flex-grow: 1;
+        .card:hover .admin-icon {
+            transform: scale(1.1) rotate(-5deg);
         }
 
-        .admin-label {
-            font-size: 12px;
-            color: var(--tg-soft);
-        }
-
-        .admin-value {
-            font-size: 16px;
-            font-weight: 500;
-        }
+        .admin-details { flex-grow: 1; }
+        .admin-label { font-size: 12px; color: var(--tg-soft); margin-bottom: 2px; }
+        .admin-value { font-size: 16px; font-weight: 600; color: var(--tg-text); }
 
         .action-btn {
-            background: none;
+            background: rgba(34, 158, 217, 0.1);
             border: none;
             color: var(--tg-blue);
             cursor: pointer;
-            padding: 8px;
-            font-size: 16px;
-        }
-
-        /* =========================================
-           4. SERVICES SECTION (GRID)
-           ========================================= */
-        .services-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* 2 Columns */
-            gap: 12px;
-        }
-
-        .service-card {
-            background: var(--tg-white);
-            border-radius: var(--radius-card);
-            padding: 16px;
-            box-shadow: var(--shadow-card);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
         }
-
-        .service-card:active {
-            transform: scale(0.97);
-        }
-
-        /* Blue styling for price tag */
-        .price-tag {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--tg-blue);
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-bottom-left-radius: 10px;
-        }
-
-        .service-icon {
-            font-size: 28px;
-            margin-bottom: 10px;
-            color: var(--tg-blue);
-            margin-top: 10px;
-        }
-
-        .service-name {
-            font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            line-height: 1.2;
-        }
-
-        .service-desc {
-            font-size: 12px;
-            color: var(--tg-soft);
-            margin-bottom: 8px;
-        }
+        .action-btn:hover { background: var(--tg-blue); color: white; }
 
         /* =========================================
-           5. FAQ SECTION (ACCORDION)
-           ========================================= */
-        .faq-item {
-            background: var(--tg-white);
-            border-radius: var(--radius-card);
-            margin-bottom: 10px;
-            box-shadow: var(--shadow-card);
-            overflow: hidden;
-        }
-
-        .faq-question {
-            padding: 16px;
-            font-weight: 500;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .faq-question i {
-            color: var(--tg-blue);
-            transition: transform 0.3s ease;
-        }
-
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            background-color: #FAFAFA;
-            color: var(--tg-soft);
-            font-size: 14px;
-        }
-
-        .faq-answer p {
-            padding: 0 16px 16px 16px;
-            line-height: 1.6;
-        }
-
-        /* Active state for FAQ */
-        .faq-item.active .faq-answer {
-            max-height: 200px; /* Approximate max height */
-        }
-
-        .faq-item.active .faq-question i {
-            transform: rotate(180deg);
-        }
-
-        /* =========================================
-           TOAST NOTIFICATION
-           ========================================= */
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            text-align: center;
-            border-radius: 50px;
-            padding: 12px;
-            position: fixed;
-            z-index: 1000;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s;
-        }
-
-        .toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 50px;
-
-             /* =========================================
-           PROMOTION SLIDER STYLES (NEW)
+           5. PROMOTION SLIDER
            ========================================= */
         .promo-container {
             width: 100%;
-            margin-bottom: 20px;
-            overflow: hidden; /* Hide overflow content */
+            margin-bottom: 24px;
+            overflow: hidden;
             border-radius: var(--radius-card);
-            box-shadow: 0 4px 12px rgba(34, 158, 217, 0.15);
+            box-shadow: var(--shadow-md);
             position: relative;
+            background: #000; /* Loading bg */
         }
 
         .promo-wrapper {
             display: flex;
-            transition: transform 0.5s ease-in-out; /* Smooth slide animation */
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             width: 100%;
         }
 
         .promo-card {
-            min-width: 100%; /* Full width of container */
-            aspect-ratio: 16/9; /* 16:9 Ratio */
-            background: linear-gradient(135deg, var(--tg-blue), var(--tg-dark-blue));
+            min-width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--gradient-primary);
             color: white;
-            padding: 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -325,391 +226,597 @@
             box-sizing: border-box;
         }
 
-        /* Discount Badge */
+        /* Decorative Circles on Promo Card */
+        .promo-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        .promo-card::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
         .promo-badge {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            background-color: var(--tg-red);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--tg-red);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 2;
         }
 
         .promo-name {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
             margin-bottom: 8px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 2;
         }
 
         .promo-desc {
             font-size: 13px;
-            opacity: 0.9;
-            margin-bottom: 12px;
+            opacity: 0.95;
+            margin-bottom: 16px;
             line-height: 1.4;
+            max-width: 80%;
+            z-index: 2;
         }
 
         .promo-footer {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            margin-top: auto; /* Push to bottom */
+            align-items: center;
+            margin-top: auto;
+            z-index: 2;
         }
 
         .promo-price {
-            font-size: 22px;
-            font-weight: 700;
-            color: #FFD700; /* Gold color for price */
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
         }
 
         .promo-qty {
-            font-size: 11px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 4px 8px;
-            border-radius: 4px;
+            font-size: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
-        /* Slider Indicators (Dots) */
+        /* Dots */
         .slider-dots {
             position: absolute;
-            bottom: 10px;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 6px;
+            z-index: 5;
+            background: rgba(0,0,0,0.2);
+            padding: 4px 8px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
         }
         .dot {
             width: 6px;
             height: 6px;
-            background-color: rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.5);
             border-radius: 50%;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
         }
         .dot.active {
             background-color: white;
-            width: 12px; /* Active dot is wider */
-            border-radius: 4px;
-            }
+            width: 16px;
+            border-radius: 10px;
+        }
+
+        /* =========================================
+           6. SERVICES GRID
+           ========================================= */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .service-card {
+            background: var(--tg-white);
+            border-radius: var(--radius-card);
+            padding: 18px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(34, 158, 217, 0.3);
+        }
+
+        /* Hover Effect Gradient overlay */
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom right, rgba(34,158,217,0.03), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .service-card:hover::before { opacity: 1; }
+
+        .price-tag {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--tg-blue);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-bottom-left-radius: 12px;
+            z-index: 2;
+        }
+
+        .service-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            margin-top: 10px;
+            color: var(--tg-blue);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.2);
+        }
+
+        .service-name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            z-index: 2;
+        }
+
+        .service-desc {
+            font-size: 11px;
+            color: var(--tg-soft);
+            z-index: 2;
+        }
+
+        /* =========================================
+           7. FAQ SECTION
+           ========================================= */
+        .faq-item {
+            background: var(--tg-white);
+            border-radius: var(--radius-card);
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .faq-question {
+            padding: 18px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .faq-question:hover {
+            background-color: #FAFAFA;
+        }
+
+        .faq-question i {
+            color: var(--tg-blue);
+            transition: transform 0.3s ease;
+            font-size: 14px;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background-color: #F8F9FA;
+            color: var(--tg-soft);
+            font-size: 13px;
+        }
+
+        .faq-answer p {
+            padding: 16px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 300px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+
+        /* =========================================
+           TOAST
+           ========================================= */
+        .toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: rgba(30, 30, 30, 0.9);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 14px 20px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%) translateY(20px);
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast i { margin-right: 8px; color: #4CD964; }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-        <h1>CK Hub</h1>
-    </header>
+    <!-- MAIN WRAPPER FOR DESKTOP VIEW -->
+    <div class="app-wrapper">
 
-    <main class="container">
+        <!-- Header -->
+        <header>
+            <h1>CK Hub</h1>
+        </header>
 
-        <!-- Admin Info Section -->
-        <div class="section-title">Contact Admin</div>
-        <section class="admin-info">
-            
-            <!-- Admin Name -->
-            <div class="card">
-                <div class="admin-item">
-                    <div class="admin-icon"><i class="fas fa-user-shield"></i></div>
-                    <div class="admin-details">
-                        <div class="admin-label">Admin Name</div>
-                        <div class="admin-value">Chit Ko Ko Lwin</div>
-                    </div>
-                </div>
-            </div>
+        <main class="container">
 
-            <!-- Phone (Copyable) -->
-            <div class="card" id="phone-card">
-                <div class="admin-item">
-                    <div class="admin-icon"><i class="fas fa-phone-alt"></i></div>
-                    <div class="admin-details">
-                        <div class="admin-label">Phone Number</div>
-                        <div class="admin-value" id="phone-number">09791134604</div>
-                    </div>
-                    <button class="action-btn" onclick="copyToClipboard('09791134604')">
-                        <i class="far fa-copy"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Phone (Copyable) -->
-            <div class="card" id="phone-card">
-                <div class="admin-item">
-                    <div class="admin-icon"><i class="fas fa-phone-alt"></i></div>
-                    <div class="admin-details">
-                        <div class="admin-label">Payment Method</div>
-                        <div class="admin-value" id="phone-number">KBZ Pay,WavePay</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Telegram Links -->
-            <a href="#" class="card">
-                <div class="admin-item">
-                    <div class="admin-icon"><i class="fas fa-bullhorn"></i></div>
-                    <div class="admin-details">
-                        <div class="admin-value">Join Update Channel</div>
-                        <div class="admin-label">Get latest news & prices</div>
-                    </div>
-                    <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
-                </div>
-            </a>
-
-            <a href="#" class="card">
-                <div class="admin-item">
-                    <div class="admin-icon"><i class="fas fa-comments"></i></div>
-                    <div class="admin-details">
-                        <div class="admin-value">Buy / Sell Group</div>
-                        <div class="admin-label">Community chat</div>
-                    </div>
-                    <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
-                </div>
-            </a>
-
-            <a href="#" class="card">
-                <div class="admin-item">
-                    <div class="admin-icon"><i class="fab fa-telegram-plane"></i></div>
-                    <div class="admin-details">
-                        <div class="admin-value">Direct Admin Chat</div>
-                        <div class="admin-label">Support & Orders</div>
-                    </div>
-                    <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
-                </div>
-            </a>
-        </section>
-        
-        <section>
-        <div style="font-size: 14px; color: #229ED9; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">
-            Hot Promotions
-        </div>
-
-        <!-- PROMOTION SLIDER SECTION -->
-        <div class="promo-container">
-            <div class="promo-wrapper" id="promoSlider">
+            <!-- Admin Info Section -->
+            <div class="section-title">Contact Admin</div>
+            <section class="admin-info">
                 
-                <!-- Slide 1 -->
-                <div class="promo-card">
-                    <div class="promo-badge">-50% OFF</div>
-                    <div class="promo-name">TikTok Followers</div>
-                    <div class="promo-desc">အကောင့်အသစ်များအတွက် အထူးဈေးနှုန်း။ Real Active Users.</div>
-                    <div class="promo-footer">
-                        <div class="promo-price">3,000 Ks</div>
-                        <div class="promo-qty">Qty: 50</div>
+                <!-- Admin Name -->
+                <div class="card">
+                    <div class="admin-item">
+                        <div class="admin-icon"><i class="fas fa-user-shield"></i></div>
+                        <div class="admin-details">
+                            <div class="admin-label">Admin Name</div>
+                            <div class="admin-value">Chit Ko Ko Lwin</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Slide 2 -->
-                <div class="promo-card" style="background: linear-gradient(135deg, #8E2DE2, #4A00E0);">
-                    <div class="promo-badge">-20% OFF</div>
-                    <div class="promo-name">Telegram Premium</div>
-                    <div class="promo-desc">၆ လစာ တရားဝင် Gift အကောင့်။ Warranty ပါဝင်သည်။</div>
-                    <div class="promo-footer">
-                        <div class="promo-price">15,000 Ks</div>
-                        <div class="promo-qty">Qty: 10</div>
+                <!-- Phone (Copyable) -->
+                <div class="card" id="phone-card">
+                    <div class="admin-item">
+                        <div class="admin-icon"><i class="fas fa-phone-alt"></i></div>
+                        <div class="admin-details">
+                            <div class="admin-label">Phone Number</div>
+                            <div class="admin-value" id="phone-number">09791134604</div>
+                        </div>
+                        <button class="action-btn" onclick="copyToClipboard('09791134604')" title="Copy Number">
+                            <i class="far fa-copy"></i>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Slide 3 -->
-                <div class="promo-card" style="background: linear-gradient(135deg, #F2994A, #F2C94C);">
-                    <div class="promo-badge" style="background-color: #000;">HOT</div>
-                    <div class="promo-name">PUBG UC Pack</div>
-                    <div class="promo-desc">600+60 UC (Global Code). Instant Delivery.</div>
-                    <div class="promo-footer">
-                        <div class="promo-price">8,000 Ks</div>
-                        <div class="promo-qty">Qty: 100</div>
+                <!-- Payment Info -->
+                <div class="card">
+                    <div class="admin-item">
+                        <div class="admin-icon"><i class="fas fa-wallet"></i></div>
+                        <div class="admin-details">
+                            <div class="admin-label">Payment Method</div>
+                            <div class="admin-value">KBZ Pay, WavePay</div>
+                        </div>
                     </div>
                 </div>
 
-            </div>
-        </div>
-        </section>
+                <!-- Telegram Links -->
+                <a href="#" class="card">
+                    <div class="admin-item">
+                        <div class="admin-icon"><i class="fas fa-bullhorn"></i></div>
+                        <div class="admin-details">
+                            <div class="admin-value">Join Update Channel</div>
+                            <div class="admin-label">Get latest news & prices</div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
+                    </div>
+                </a>
 
-        <!-- Services Section -->
-        <div class="section-title">Services</div>
-        <section class="services-grid">
+                <a href="#" class="card">
+                    <div class="admin-item">
+                        <div class="admin-icon"><i class="fas fa-comments"></i></div>
+                        <div class="admin-details">
+                            <div class="admin-value">Buy / Sell Group</div>
+                            <div class="admin-label">Community chat</div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
+                    </div>
+                </a>
+
+                <a href="#" class="card">
+                    <div class="admin-item">
+                        <div class="admin-icon"><i class="fab fa-telegram-plane"></i></div>
+                        <div class="admin-details">
+                            <div class="admin-value">Direct Admin Chat</div>
+                            <div class="admin-label">Support & Orders</div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
+                    </div>
+                </a>
+            </section>
             
-            <!-- SIM/DATA -->
-            <div class="service-card">
-                <span class="price-tag">$5.00</span>
-                <i class="fas fa-sim-card service-icon"></i>
-                <div class="service-name">Atom Data</div>
-                <div class="service-desc">10GB Monthly Plan</div>
-            </div>
+            <!-- Promotion Slider -->
+            <div class="section-title">Hot Promotions</div>
+            <div class="promo-container">
+                <div class="promo-wrapper" id="promoSlider">
+                    
+                    <!-- Slide 1 -->
+                    <div class="promo-card">
+                        <div class="promo-badge">-50% OFF</div>
+                        <div class="promo-name">TikTok Followers</div>
+                        <div class="promo-desc">အကောင့်အသစ်များအတွက် အထူးဈေးနှုန်း။ Real Active Users.</div>
+                        <div class="promo-footer">
+                            <div class="promo-price">3,000 Ks</div>
+                            <div class="promo-qty">Qty: 50</div>
+                        </div>
+                    </div>
 
-            <div class="service-card">
-                <span class="price-tag">$2.50</span>
-                <i class="fas fa-wifi service-icon"></i>
-                <div class="service-name">MPT Topup</div>
-                <div class="service-desc">Direct Transfer</div>
-            </div>
+                    <!-- Slide 2 -->
+                    <div class="promo-card" style="background: linear-gradient(135deg, #8E2DE2, #4A00E0);">
+                        <div class="promo-badge">-20% OFF</div>
+                        <div class="promo-name">Telegram Premium</div>
+                        <div class="promo-desc">၆ လစာ တရားဝင် Gift အကောင့်။ Warranty ပါဝင်သည်။</div>
+                        <div class="promo--footer">
+                            <div class="promo-price">15,000 Ks</div>
+                            <div class="promo-qty">Qty: 10</div>
+                        </div>
+                    </div>
 
-            <!-- GAME TOPUP -->
-            <div class="service-card">
-                <span class="price-tag">$1.50</span>
-                <i class="fas fa-gem service-icon"></i>
-                <div class="service-name">MLBB Gems</div>
-                <div class="service-desc">88 Diamonds</div>
-            </div>
+                    <!-- Slide 3 -->
+                    <div class="promo-card" style="background: linear-gradient(135deg, #F2994A, #F2C94C);">
+                        <div class="promo-badge" style="background-color: #000;">HOT</div>
+                        <div class="promo-name">PUBG UC Pack</div>
+                        <div class="promo-desc">600+60 UC (Global Code). Instant Delivery.</div>
+                        <div class="promo-footer">
+                            <div class="promo-price">8,000 Ks</div>
+                            <div class="promo-qty">Qty: 100</div>
+                        </div>
+                    </div>
 
-            <div class="service-card">
-                <span class="price-tag">$3.00</span>
-                <i class="fas fa-crosshairs service-icon"></i>
-                <div class="service-name">PUBG UC</div>
-                <div class="service-desc">120 UC Pack</div>
-            </div>
-
-            <!-- SMM SERVICES -->
-            <div class="service-card">
-                <span class="price-tag">$4.50</span>
-                <i class="fab fa-telegram service-icon"></i>
-                <div class="service-name">Premium</div>
-                <div class="service-desc">3 Months Gift</div>
-            </div>
-
-            <div class="service-card">
-                <span class="price-tag">$2.00</span>
-                <i class="fab fa-instagram service-icon"></i>
-                <div class="service-name">Insta Likes</div>
-                <div class="service-desc">1000 Likes HQ</div>
-            </div>
-
-        </section>
-         <!-- SERVICES SECTION START -->
-        <div class="section-title">TikTok Services</div>
-        <section class="services-grid">
-            
-            <!-- TikTok Views -->
-            <div class="service-card">
-                <span class="price-tag">$1.00</span>
-                <i class="fas fa-eye service-icon" style="color: #000;"></i>
-                <div class="service-name">TikTok Views</div>
-                <div class="service-desc">10,000 Views</div>
-            </div>
-
-            <!-- TikTok Followers -->
-            <div class="service-card">
-                <span class="price-tag">$5.00</span>
-                <i class="fab fa-tiktok service-icon"></i>
-                <div class="service-name">Followers</div>
-                <div class="service-desc">1000 Real Fans</div>
-            </div>
-
-            <!-- TikTok Likes -->
-            <div class="service-card">
-                <span class="price-tag">$2.50</span>
-                <i class="fas fa-heart service-icon"></i>
-                <div class="service-name">TikTok Likes</div>
-                <div class="service-desc">1000 Hearts</div>
-            </div>
-
-            <!-- TikTok Coins -->
-            <div class="service-card">
-                <span class="price-tag">$10.00</span>
-                <i class="fas fa-coins service-icon" style="color: gold;"></i>
-                <div class="service-name">TikTok Coins</div>
-                <div class="service-desc">700 Coins Pack</div>
-            </div>
-
-        </section>
-
-        <div class="section-title">Telegram Services</div>
-        <section class="services-grid">
-
-            <!-- Telegram Premium -->
-            <div class="service-card">
-                <span class="price-tag">$4.50</span>
-                <i class="fas fa-star service-icon" style="color: #FFD700;"></i>
-                <div class="service-name">Premium 3M</div>
-                <div class="service-desc">Official Gift</div>
-            </div>
-
-            <!-- Telegram Members -->
-            <div class="service-card">
-                <span class="price-tag">$3.00</span>
-                <i class="fas fa-users service-icon" style="color: var(--tg-blue);"></i>
-                <div class="service-name">Channel Subs</div>
-                <div class="service-desc">1000 Members</div>
-            </div>
-
-            <!-- Telegram Stars -->
-            <div class="service-card">
-                <span class="price-tag">$2.00</span>
-                <i class="fas fa-magic service-icon" style="color: orange;"></i>
-                <div class="service-name">Tele Stars</div>
-                <div class="service-desc">50 Stars Pack</div>
-            </div>
-
-            <!-- Telegram Post Views -->
-            <div class="service-card">
-                <span class="price-tag">$0.50</span>
-                <i class="fas fa-chart-bar service-icon" style="color: var(--tg-blue);"></i>
-                <div class="service-name">Post Views</div>
-                <div class="service-desc">5k Post Views</div>
-            </div>
-
-        </section>
-        <!-- SERVICES SECTION END -->
-
-        <!-- FAQ Section -->
-        <div class="section-title">FAQ</div>
-        <section class="faq-section">
-            
-            <div class="faq-item">
-                <div class="faq-question">
-                    How do I pay?
-                    <i class="fas fa-chevron-down"></i>
                 </div>
-                <div class="faq-answer">
-                    <p>We accept KPay, Wave Money, and KBZ Banking. Please send a screenshot to the admin after transfer.</p>
+
+                <!-- Dots Indicator -->
+                <div class="slider-dots" id="sliderDots">
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
                 </div>
             </div>
 
-            <div class="faq-item">
-                <div class="faq-question">
-                    Is delivery instant?
-                    <i class="fas fa-chevron-down"></i>
+            <!-- Services Section -->
+            <div class="section-title">Services</div>
+            <section class="services-grid">
+                
+                <!-- SIM/DATA -->
+                <div class="service-card">
+                    <span class="price-tag">$5.00</span>
+                    <i class="fas fa-sim-card service-icon"></i>
+                    <div class="service-name">Atom Data</div>
+                    <div class="service-desc">10GB Monthly Plan</div>
                 </div>
-                <div class="faq-answer">
-                    <p>Most game top-ups are instant (1-5 mins). Data packs may take up to 10 minutes during peak hours.</p>
-                </div>
-            </div>
 
-            <div class="faq-item">
-                <div class="faq-question">
-                    What if I made a mistake?
-                    <i class="fas fa-chevron-down"></i>
+                <div class="service-card">
+                    <span class="price-tag">$2.50</span>
+                    <i class="fas fa-wifi service-icon"></i>
+                    <div class="service-name">MPT Topup</div>
+                    <div class="service-desc">Direct Transfer</div>
                 </div>
-                <div class="faq-answer">
-                    <p>Please contact the Admin immediately via the "Direct Admin Chat" button above with your Transaction ID.</p>
+
+                <!-- GAME TOPUP -->
+                <div class="service-card">
+                    <span class="price-tag">$1.50</span>
+                    <i class="fas fa-gem service-icon"></i>
+                    <div class="service-name">MLBB Gems</div>
+                    <div class="service-desc">88 Diamonds</div>
                 </div>
-            </div>
 
-        </section>
+                <div class="service-card">
+                    <span class="price-tag">$3.00</span>
+                    <i class="fas fa-crosshairs service-icon"></i>
+                    <div class="service-name">PUBG UC</div>
+                    <div class="service-desc">120 UC Pack</div>
+                </div>
 
-    </main>
+                <!-- SMM SERVICES -->
+                <div class="service-card">
+                    <span class="price-tag">$4.50</span>
+                    <i class="fab fa-telegram service-icon"></i>
+                    <div class="service-name">Premium</div>
+                    <div class="service-desc">3 Months Gift</div>
+                </div>
+
+                <div class="service-card">
+                    <span class="price-tag">$2.00</span>
+                    <i class="fab fa-instagram service-icon"></i>
+                    <div class="service-name">Insta Likes</div>
+                    <div class="service-desc">1000 Likes HQ</div>
+                </div>
+
+            </section>
+
+             <!-- TIKTOK SERVICES -->
+            <div class="section-title">TikTok Services</div>
+            <section class="services-grid">
+                
+                <!-- TikTok Views -->
+                <div class="service-card">
+                    <span class="price-tag">$1.00</span>
+                    <i class="fas fa-eye service-icon" style="color: #000;"></i>
+                    <div class="service-name">TikTok Views</div>
+                    <div class="service-desc">10,000 Views</div>
+                </div>
+
+                <!-- TikTok Followers -->
+                <div class="service-card">
+                    <span class="price-tag">$5.00</span>
+                    <i class="fab fa-tiktok service-icon"></i>
+                    <div class="service-name">Followers</div>
+                    <div class="service-desc">1000 Real Fans</div>
+                </div>
+
+                <!-- TikTok Likes -->
+                <div class="service-card">
+                    <span class="price-tag">$2.50</span>
+                    <i class="fas fa-heart service-icon" style="color: #FF2C55;"></i>
+                    <div class="service-name">TikTok Likes</div>
+                    <div class="service-desc">1000 Hearts</div>
+                </div>
+
+                <!-- TikTok Coins -->
+                <div class="service-card">
+                    <span class="price-tag">$10.00</span>
+                    <i class="fas fa-coins service-icon" style="color: gold;"></i>
+                    <div class="service-name">TikTok Coins</div>
+                    <div class="service-desc">700 Coins Pack</div>
+                </div>
+
+            </section>
+
+            <!-- TELEGRAM SERVICES -->
+            <div class="section-title">Telegram Services</div>
+            <section class="services-grid">
+
+                <!-- Telegram Premium -->
+                <div class="service-card">
+                    <span class="price-tag">$4.50</span>
+                    <i class="fas fa-star service-icon" style="color: #FFD700;"></i>
+                    <div class="service-name">Premium 3M</div>
+                    <div class="service-desc">Official Gift</div>
+                </div>
+
+                <!-- Telegram Members -->
+                <div class="service-card">
+                    <span class="price-tag">$3.00</span>
+                    <i class="fas fa-users service-icon" style="color: var(--tg-blue);"></i>
+                    <div class="service-name">Channel Subs</div>
+                    <div class="service-desc">1000 Members</div>
+                </div>
+
+                <!-- Telegram Stars -->
+                <div class="service-card">
+                    <span class="price-tag">$2.00</span>
+                    <i class="fas fa-magic service-icon" style="color: orange;"></i>
+                    <div class="service-name">Tele Stars</div>
+                    <div class="service-desc">50 Stars Pack</div>
+                </div>
+
+                <!-- Telegram Post Views -->
+                <div class="service-card">
+                    <span class="price-tag">$0.50</span>
+                    <i class="fas fa-chart-bar service-icon" style="color: var(--tg-blue);"></i>
+                    <div class="service-name">Post Views</div>
+                    <div class="service-desc">5k Post Views</div>
+                </div>
+
+            </section>
+
+            <!-- FAQ Section -->
+            <div class="section-title">FAQ</div>
+            <section class="faq-section">
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        How do I pay?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We accept KPay, Wave Money, and KBZ Banking. Please send a screenshot to the admin after transfer.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        Is delivery instant?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Most game top-ups are instant (1-5 mins). Data packs may take up to 10 minutes during peak hours.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        What if I made a mistake?
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Please contact the Admin immediately via the "Direct Admin Chat" button above with your Transaction ID.</p>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div> <!-- End App Wrapper -->
 
     <!-- Toast Notification -->
-    <div id="toast" class="toast">Phone number copied!</div>
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i>Copied to clipboard!</div>
 
     <script>
         /* =========================================
-           JAVASCRIPT LOGIC (script.js)
+           JAVASCRIPT LOGIC
            ========================================= */
 
         // 1. Copy to Clipboard Functionality
         function copyToClipboard(text) {
-            // Attempt to use the modern Clipboard API
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(text)
                     .then(() => showToast('Phone number copied!'))
-                    .catch(err => {
-                        console.error('Async: Could not copy text: ', err);
-                        fallbackCopyTextToClipboard(text);
-                    });
+                    .catch(err => fallbackCopyTextToClipboard(text));
             } else {
-                // Fallback for older browsers or non-secure contexts
                 fallbackCopyTextToClipboard(text);
             }
         }
@@ -717,33 +824,26 @@
         function fallbackCopyTextToClipboard(text) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
-            
-            // Ensure textarea is not visible but part of DOM
-            textArea.style.top = "0";
-            textArea.style.left = "0";
             textArea.style.position = "fixed";
-
+            textArea.style.left = "-9999px";
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-
             try {
-                const successful = document.execCommand('copy');
-                if(successful) showToast('Phone number copied!');
+                document.execCommand('copy');
+                showToast('Phone number copied!');
             } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
                 showToast('Failed to copy');
             }
-
             document.body.removeChild(textArea);
         }
 
         // 2. Toast Notification Logic
         function showToast(message) {
             const toast = document.getElementById("toast");
-            toast.innerText = message;
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
             toast.className = "toast show";
-            setTimeout(function(){ 
+            setTimeout(() => { 
                 toast.className = toast.className.replace("show", ""); 
             }, 3000);
         }
@@ -751,33 +851,23 @@
         // 3. FAQ Accordion Logic
         document.addEventListener('DOMContentLoaded', () => {
             const faqItems = document.querySelectorAll('.faq-item');
-
             faqItems.forEach(item => {
                 const question = item.querySelector('.faq-question');
-                
                 question.addEventListener('click', () => {
-                    // Close other open items (Optional behavior, often cleaner)
-                    // faqItems.forEach(otherItem => {
-                    //     if (otherItem !== item) otherItem.classList.remove('active');
-                    // });
-
-                    // Toggle current item
+                    // Close other open items logic can be added here if needed
                     item.classList.toggle('active');
                 });
             });
         });
 
-         // SLIDER LOGIC
+         // 4. Slider Logic
         const slider = document.getElementById('promoSlider');
         const dots = document.querySelectorAll('.dot');
         let currentSlide = 0;
         const totalSlides = 3;
 
         function updateSlider() {
-            // Move the slider Wrapper
             slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-            
-            // Update Dots
             dots.forEach((dot, index) => {
                 if(index === currentSlide) {
                     dot.classList.add('active');
@@ -789,15 +879,11 @@
 
         function nextSlide() {
             currentSlide++;
-            if (currentSlide >= totalSlides) {
-                currentSlide = 0; // Loop back to start
-            }
+            if (currentSlide >= totalSlides) currentSlide = 0;
             updateSlider();
         }
 
-        // Auto slide every 5 seconds (5000ms)
         setInterval(nextSlide, 5000);
     </script>
 </body>
 </html>
-
