@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CK Hub</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Roboto (Telegram uses a similar clean sans-serif) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           1. CSS VARIABLES & RESET (style.css)
+           ========================================= */
+        :root {
+            /* Telegram Palette */
+            --tg-blue: #229ED9;
+            --tg-dark-blue: #1C85B8;
+            --tg-bg: #E8F6FB; /* Light blue background */
+            --tg-white: #FFFFFF;
+            --tg-text: #1A1A1A;
+            --tg-soft: #6E6E6E;
+            --tg-border: #E1E8ED;
+            
+            /* Spacing & Radius */
+            --radius-card: 14px;
+            --radius-btn: 10px;
+            --shadow-card: 0 4px 12px rgba(34, 158, 217, 0.08);
+            --shadow-active: 0 2px 5px rgba(34, 158, 217, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--tg-bg);
+            color: var(--tg-text);
+            line-height: 1.5;
+            /* No footer, so we add bottom padding for scrolling */
+            padding-bottom: 40px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Utility for hidden elements */
+        .hidden { display: none; }
+
+        /* =========================================
+           2. HEADER
+           ========================================= */
+        header {
+            background: linear-gradient(90deg, var(--tg-blue), var(--tg-dark-blue));
+            color: var(--tg-white);
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 600px; /* Mobile first, limited width on desktop */
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* =========================================
+           3. ADMIN INFO SECTION
+           ========================================= */
+        .section-title {
+            font-size: 14px;
+            color: var(--tg-blue);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            padding-left: 4px;
+        }
+
+        .card {
+            background: var(--tg-white);
+            border-radius: var(--radius-card);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.1s ease;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+            background-color: #F5F9FC;
+        }
+
+        .admin-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            color: var(--tg-text);
+        }
+
+        .admin-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--tg-bg);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--tg-blue);
+            font-size: 18px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .admin-details {
+            flex-grow: 1;
+        }
+
+        .admin-label {
+            font-size: 12px;
+            color: var(--tg-soft);
+        }
+
+        .admin-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--tg-blue);
+            cursor: pointer;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        /* =========================================
+           4. SERVICES SECTION (GRID)
+           ========================================= */
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 Columns */
+            gap: 12px;
+        }
+
+        .service-card {
+            background: var(--tg-white);
+            border-radius: var(--radius-card);
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .service-card:active {
+            transform: scale(0.97);
+        }
+
+        /* Blue styling for price tag */
+        .price-tag {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--tg-blue);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .service-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: var(--tg-blue);
+            margin-top: 10px;
+        }
+
+        .service-name {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .service-desc {
+            font-size: 12px;
+            color: var(--tg-soft);
+            margin-bottom: 8px;
+        }
+
+        /* =========================================
+           5. FAQ SECTION (ACCORDION)
+           ========================================= */
+        .faq-item {
+            background: var(--tg-white);
+            border-radius: var(--radius-card);
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 16px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .faq-question i {
+            color: var(--tg-blue);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #FAFAFA;
+            color: var(--tg-soft);
+            font-size: 14px;
+        }
+
+        .faq-answer p {
+            padding: 0 16px 16px 16px;
+            line-height: 1.6;
+        }
+
+        /* Active state for FAQ */
+        .faq-item.active .faq-answer {
+            max-height: 200px; /* Approximate max height */
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+
+        /* =========================================
+           TOAST NOTIFICATION
+           ========================================= */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 12px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>CK Hub</h1>
+    </header>
+
+    <main class="container">
+
+        <!-- Admin Info Section -->
+        <div class="section-title">Contact Admin</div>
+        <section class="admin-info">
+            
+            <!-- Admin Name -->
+            <div class="card">
+                <div class="admin-item">
+                    <div class="admin-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="admin-details">
+                        <div class="admin-label">Admin Name</div>
+                        <div class="admin-value">CK Admin</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phone (Copyable) -->
+            <div class="card" id="phone-card">
+                <div class="admin-item">
+                    <div class="admin-icon"><i class="fas fa-phone-alt"></i></div>
+                    <div class="admin-details">
+                        <div class="admin-label">Phone Number</div>
+                        <div class="admin-value" id="phone-number">099000000</div>
+                    </div>
+                    <button class="action-btn" onclick="copyToClipboard('099000000')">
+                        <i class="far fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Telegram Links -->
+            <a href="#" class="card">
+                <div class="admin-item">
+                    <div class="admin-icon"><i class="fas fa-bullhorn"></i></div>
+                    <div class="admin-details">
+                        <div class="admin-value">Join Update Channel</div>
+                        <div class="admin-label">Get latest news & prices</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
+                </div>
+            </a>
+
+            <a href="#" class="card">
+                <div class="admin-item">
+                    <div class="admin-icon"><i class="fas fa-comments"></i></div>
+                    <div class="admin-details">
+                        <div class="admin-value">Buy / Sell Group</div>
+                        <div class="admin-label">Community chat</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
+                </div>
+            </a>
+
+            <a href="#" class="card">
+                <div class="admin-item">
+                    <div class="admin-icon"><i class="fab fa-telegram-plane"></i></div>
+                    <div class="admin-details">
+                        <div class="admin-value">Direct Admin Chat</div>
+                        <div class="admin-label">Support & Orders</div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--tg-soft); font-size: 12px;"></i>
+                </div>
+            </a>
+        </section>
+
+        <!-- Services Section -->
+        <div class="section-title">Services</div>
+        <section class="services-grid">
+            
+            <!-- SIM/DATA -->
+            <div class="service-card">
+                <span class="price-tag">$5.00</span>
+                <i class="fas fa-sim-card service-icon"></i>
+                <div class="service-name">Atom Data</div>
+                <div class="service-desc">10GB Monthly Plan</div>
+            </div>
+
+            <div class="service-card">
+                <span class="price-tag">$2.50</span>
+                <i class="fas fa-wifi service-icon"></i>
+                <div class="service-name">MPT Topup</div>
+                <div class="service-desc">Direct Transfer</div>
+            </div>
+
+            <!-- GAME TOPUP -->
+            <div class="service-card">
+                <span class="price-tag">$1.50</span>
+                <i class="fas fa-gem service-icon"></i>
+                <div class="service-name">MLBB Gems</div>
+                <div class="service-desc">88 Diamonds</div>
+            </div>
+
+            <div class="service-card">
+                <span class="price-tag">$3.00</span>
+                <i class="fas fa-crosshairs service-icon"></i>
+                <div class="service-name">PUBG UC</div>
+                <div class="service-desc">120 UC Pack</div>
+            </div>
+
+            <!-- SMM SERVICES -->
+            <div class="service-card">
+                <span class="price-tag">$4.50</span>
+                <i class="fab fa-telegram service-icon"></i>
+                <div class="service-name">Premium</div>
+                <div class="service-desc">3 Months Gift</div>
+            </div>
+
+            <div class="service-card">
+                <span class="price-tag">$2.00</span>
+                <i class="fab fa-instagram service-icon"></i>
+                <div class="service-name">Insta Likes</div>
+                <div class="service-desc">1000 Likes HQ</div>
+            </div>
+
+        </section>
+
+        <!-- FAQ Section -->
+        <div class="section-title">FAQ</div>
+        <section class="faq-section">
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    How do I pay?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>We accept KPay, Wave Money, and KBZ Banking. Please send a screenshot to the admin after transfer.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Is delivery instant?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Most game top-ups are instant (1-5 mins). Data packs may take up to 10 minutes during peak hours.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    What if I made a mistake?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Please contact the Admin immediately via the "Direct Admin Chat" button above with your Transaction ID.</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Phone number copied!</div>
+
+    <script>
+        /* =========================================
+           JAVASCRIPT LOGIC (script.js)
+           ========================================= */
+
+        // 1. Copy to Clipboard Functionality
+        function copyToClipboard(text) {
+            // Attempt to use the modern Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast('Phone number copied!'))
+                    .catch(err => {
+                        console.error('Async: Could not copy text: ', err);
+                        fallbackCopyTextToClipboard(text);
+                    });
+            } else {
+                // Fallback for older browsers or non-secure contexts
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // Ensure textarea is not visible but part of DOM
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if(successful) showToast('Phone number copied!');
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                showToast('Failed to copy');
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // 2. Toast Notification Logic
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "toast show";
+            setTimeout(function(){ 
+                toast.className = toast.className.replace("show", ""); 
+            }, 3000);
+        }
+
+        // 3. FAQ Accordion Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const faqItems = document.querySelectorAll('.faq-item');
+
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                
+                question.addEventListener('click', () => {
+                    // Close other open items (Optional behavior, often cleaner)
+                    // faqItems.forEach(otherItem => {
+                    //     if (otherItem !== item) otherItem.classList.remove('active');
+                    // });
+
+                    // Toggle current item
+                    item.classList.toggle('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
